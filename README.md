@@ -1,5 +1,5 @@
 # GenCoal
-GenCoal has two algorithms that are ClipIRMol and structural evolution for generating coal molecular model. Input FT-IR to generate SMILES of Coal fragments based on deep learning model ClipIRMol. Feeding your experimental <sub>13</sub>C NMR and elemental ratios to generate final coal model using structral based on structural evolution. 
+GenCoal has two algorithms that are ClipIRMol and structural evolution for generating coal molecular model. Input FT-IR to generate SMILES of Coal fragments based on deep learning model ClipIRMol. Feeding your experimental <sup>13</sup>C NMR and elemental ratios to generate final coal model using structral based on structural evolution. 
 ![image](https://github.com/GYLiGroup/GenCoal/assets/165234257/f432498a-bff6-44cb-92c1-afcce716b1e0)
 # Coal Macromolecular Model Construction Using Deep Learning
 
