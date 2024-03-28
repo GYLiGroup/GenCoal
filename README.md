@@ -29,7 +29,7 @@ The research was supported by the National Natural Science Foundation of China, 
 
 ## Contributing
 
-*Information on how others can contribute to the project, if applicable.*
+If you have a suggestion or find a bug, please post to our Issues page on GitHub.
 
 ## License
 
