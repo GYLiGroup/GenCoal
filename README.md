@@ -21,7 +21,7 @@ The research was supported by the National Natural Science Foundation of China, 
 
 ## Developers
 
-Haodoing Liu [（liuhaodong.ncst@foxmail.com）](mailto:liuhaodong.ncst@foxmail.com)
+Haodoing Liu ([liuhaodong.ncst@foxmail.com](mailto:liuhaodong.ncst@foxmail.com))
 
 ## Installation
 
