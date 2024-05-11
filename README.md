@@ -19,6 +19,10 @@ The research was supported by the National Natural Science Foundation of China, 
 
 [Article Link](https://doi.org/10.1016/j.energy.2024.130856)
 
+## Developers
+
+[Haodoing Liu](mailto:liuhaodong.ncst@foxmail.com)
+
 ## Installation
 
 *Instructions on installing and setting up ClipIRMol or related tools would be provided here.*
