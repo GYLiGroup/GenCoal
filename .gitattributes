@@ -1,0 +1,2 @@
+Coal/** filter=lfs diff=lfs merge=lfs -text
+docs/** filter=lfs diff=lfs merge=lfs -text
