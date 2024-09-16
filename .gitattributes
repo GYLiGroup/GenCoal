@@ -1,0 +1,1 @@
+docs/source/examples/smile_ir.csv filter=lfs diff=lfs merge=lfs -text
