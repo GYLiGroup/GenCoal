@@ -2,7 +2,7 @@
 
 GenCoal is an open-source software package in Python to generate coal molecular structures.
 
-<img src="docs/source/logos/flowchart.jpg" alt="煤分子结构示例" width="500">
+<img src="docs/source/logos/flowchart.jpg" alt="煤分子结构示例" width="1000">
 
 ## Dependencies
 
