@@ -848,14 +848,14 @@ def _connect_ring_C(mol1, mol2, chosen_pair1, chosen_pair2):
     """
     Connects two molecules using two methane molecules to simulate the addition of methyl groups at specified carbon atoms.
 
-    Parameters:
+    Parameters
     ----------
     mol1, mol2 : RDKit Mol
         The molecule objects to be connected.
     chosen_pair1, chosen_pair2 : tuple
         Pairs of carbon atom indices in mol1 and mol2, respectively, where the methane molecules will be connected.
 
-    Returns:
+    Returns
     -------
     RDKit Mol
         A new RDKit Mol object that represents the connected molecule structure.
@@ -889,14 +889,14 @@ def _find_index_pairs(carbons, mol):
     """
     Finds index pairs of carbon atoms within a molecule for connection.
 
-    Parameters:
+    Parameters
     ----------
     carbons : list of int
         A list containing indices of carbon atoms within the molecule that are suitable for connection.
     mol : RDKit Mol object
         The molecule in which the carbon atoms are located.
 
-    Returns:
+    Returns
     -------
     list of tuples
         A list where each tuple contains two indices representing a pair of carbon atoms.
@@ -916,12 +916,12 @@ def connect_rings(molecules_tuple_list):
     """
     Connects two rings from a list of molecule tuples by adding two methane groups between them.
 
-    Parameters:
+    Parameters
     ----------
     molecules_tuple_list : list of tuples
         A list where each tuple contains a SMILES string of a molecule and a list of carbon atom indices.
 
-    Returns:
+    Returns
     -------
     SMILES
         A new SMILES string that represents the connected molecule structure.
@@ -1299,7 +1299,7 @@ def find_aliphatic_carbons(mol):
 
     Returns
     -------
-   aliphatic_carbons : list
+    aliphatic_carbons : list
         A list of indices corresponding to aliphatic carbon atoms in the molecule.
     """
     aliphatic_carbons = []
@@ -1445,16 +1445,21 @@ def show_ring_carbon_numbers(smiles):
 
 def select_carbons_from_different_rings(current_molecule, ring_carbons, n):
     """
-    Selects up to n carbon atoms from different rings within the given molecule.
-    
-    Parameters:
-    - current_molecule (str): SMILES representation of the molecule.
-    - ring_carbons (list): A list of indices of carbon atoms within rings.
-    - n (int): The number of carbon atoms to select, each from a different ring.
-    
-    Returns:
+    Select up to `n` carbon atoms from different rings within the given molecule.
+
+    Parameters
+    ----------
+    current_molecule : str
+        SMILES representation of the molecule.
+    ring_carbons : list
+        A list of indices of carbon atoms within rings.
+    n : int
+        The number of carbon atoms to select, each from a different ring.
+
+    Returns
+    -------
     selected_indices : list
-                       A list of selected carbon atom indices, each from different rings.
+        A list of selected carbon atom indices, each from different rings.
     """
     mol = Chem.MolFromSmiles(current_molecule)
     ring_info = mol.GetRingInfo()
@@ -1481,12 +1486,16 @@ def count_atoms(smiles_input):
     Counts the number of each specified element in a single SMILES string or a list of SMILES strings.
     Ensures all expected elements are included in the result dictionary, even if their count is 0.
 
-    Parameters:
-    - smiles_input (str or list): A single SMILES string or a list of SMILES strings representing molecule(s).
+    Parameters
+    ----------
+    smiles_input : str or list
+        A single SMILES string or a list of SMILES strings representing molecule(s).
 
-    Returns:
-    - dict: A dictionary with element symbols as keys and their total counts across all input molecules as values.
-            Includes 'C', 'H', 'O', 'N', and 'S'.
+    Returns
+    -------
+    dict
+        A dictionary with element symbols as keys and their total counts across all input molecules as values.
+        Includes 'C', 'H', 'O', 'N', and 'S'.
     """
     atom_counts = {'C': 0, 'H': 0, 'O': 0, 'N': 0, 'S': 0}  # Predefine expected elements with counts of 0
 
@@ -1516,14 +1525,14 @@ def balance_c_and_n_atoms(smiles, target_element_counts):
     Modifies a molecule by replacing carbon atoms with nitrogen to meet target element counts,
     while avoiding changes in benzene rings.
 
-    Parameters:
+    Parameters
     ----------
     smiles : str
         SMILES representation of the molecule.
     target_element_counts : dict
         Dictionary with target counts for elements, e.g., {'C': x, 'N': y}.
 
-    Returns:
+    Returns
     -------
     new_smiles : str
         A new SMILES string of the modified molecule, or the original SMILES if the desired modifications cannot be made.
@@ -1562,14 +1571,14 @@ def find_atom_indices(smiles, atom_symbol):
     Returns the indices of specified atoms in a molecule. For oxygen atoms,
     it specifically returns those bonded to exactly two carbon atoms.
 
-    Parameters:
+    Parameters
     ----------
     smiles : str
         SMILES representation of the molecule.
     atom_symbol : str
         The symbol of the atom to find ('O' for oxygen, 'S' for sulfur).
 
-    Returns:
+    Returns
     -------
     list
         A list of indices for the specified atoms under the given conditions.
@@ -1596,14 +1605,14 @@ def balance_o_and_s_atoms(smiles, target_element_counts):
     Modifies a molecule by replacing sulfur atoms with oxygen, or vice versa,
     to meet target element counts for oxygen and sulfur.
 
-    Parameters:
+    Parameters
     ----------
     smiles : str
         SMILES representation of the molecule.
     target_element_counts : dict
         Dictionary with target counts for oxygen ('O') and sulfur ('S').
 
-    Returns:
+    Returns
     -------
     str
         A new SMILES string of the modified molecule.
@@ -1673,7 +1682,7 @@ def count_property(smiles_input):
     """
     Prints the counts of specified elements (C, N, H, S, O) in a single SMILES string or a list of SMILES strings.
 
-    Parameters:
+    Parameters
     - smiles_input: A single SMILES string or a list of SMILES strings representing molecule(s).
     """
     property_counts = {'C_N_ar': 0, 'C_al': 0, 'O_S': 0, 'H': 0}
@@ -1715,7 +1724,7 @@ def drawMolecules(smiles_list, molsPerRow, maxMols=100):
     """
     Draws a grid image of molecules from a list of SMILES strings.
 
-    Parameters:
+    Parameters
     - smiles_list: List of SMILES strings representing the molecules to be drawn.
     - molsPerRow: Number of molecules to display per row in the grid image.
     """
@@ -1736,10 +1745,10 @@ def calculate_mass_percentages(atom_counts):
     """
     Calculates the mass percentages of elements based on their counts in a molecule.
 
-    Parameters:
+    Parameters
     - atom_counts (dict): A dictionary with element symbols as keys and their counts as values.
 
-    Returns:
+    Returns
     - dict: A dictionary with element symbols as keys and their mass percentages as values.
     """
     # 原子质量参考，单位为原子质量单位 (amu)
