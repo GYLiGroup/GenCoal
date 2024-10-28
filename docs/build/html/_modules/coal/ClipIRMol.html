@@ -1,0 +1,518 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coal.ClipIRMol &mdash; GenCoal v1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=0ec76b63"></script>
+      <script src="../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            GenCoal
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/bitumite.html">bitumite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/lignite.html">lignite</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/ClipIRMol.html">ClipIRMol Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/CoalGenerator.html">CoalGenerator Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/utils.html">utils Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/main.html">main Module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">GenCoal</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coal.ClipIRMol</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coal.ClipIRMol</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+<span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">rdchem</span>
+<span class="kn">from</span> <span class="nn">rdkit.Chem.Draw</span> <span class="kn">import</span> <span class="n">MolsToGridImage</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">CubicSpline</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">coal.main</span> <span class="k">as</span> <span class="nn">main</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+<span class="kn">from</span> <span class="nn">rdkit.Chem.rdchem</span> <span class="kn">import</span> <span class="n">BondType</span>
+
+<span class="c1"># Globel variables</span>
+<span class="n">MODEL_FILENAME</span> <span class="o">=</span> <span class="s1">&#39;clip_model_60000&#39;</span>
+<span class="n">MODEL_PARAMS_FILENAME</span> <span class="o">=</span> <span class="n">MODEL_FILENAME</span> <span class="o">+</span> <span class="s1">&#39;_parameters.pth&#39;</span>
+<span class="n">TEXT_ENCODER_PARAMS_PATH</span> <span class="o">=</span> <span class="s1">&#39;model_2023-04-14_TextEncoder_parameters.pkl&#39;</span>
+<span class="n">TEXT_FEATURES_PATH</span> <span class="o">=</span> <span class="s2">&quot;text_features.npy&quot;</span>
+
+
+<div class="viewcode-block" id="check_isotope"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.check_isotope">[docs]</a><span class="k">def</span> <span class="nf">check_isotope</span><span class="p">(</span><span class="n">molecule</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetIsotope</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="check_c_neigh_o"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.check_c_neigh_o">[docs]</a><span class="k">def</span> <span class="nf">check_c_neigh_o</span><span class="p">(</span><span class="n">molecule</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+            <span class="n">oxygen_neighbors</span> <span class="o">=</span> <span class="p">[</span><span class="n">neighbor</span> <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetNeighbors</span><span class="p">()</span> <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">oxygen_neighbors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="check_rings"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.check_rings">[docs]</a><span class="k">def</span> <span class="nf">check_rings</span><span class="p">(</span><span class="n">molecule</span><span class="p">):</span>
+    <span class="n">rings</span> <span class="o">=</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">AtomRings</span><span class="p">()</span>  
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rings</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">for</span> <span class="n">ring</span> <span class="ow">in</span> <span class="n">rings</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">check_six_membered_ring</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">ring</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">check_five_membered_ring</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">ring</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="check_six_membered_ring"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.check_six_membered_ring">[docs]</a><span class="k">def</span> <span class="nf">check_six_membered_ring</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">ring</span><span class="p">):</span>
+    <span class="n">ring_atoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">molecule</span><span class="o">.</span><span class="n">GetAtomWithIdx</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">ring</span><span class="p">]</span>
+    <span class="n">double_bonds</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">ring_atoms</span> <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetHybridization</span><span class="p">()</span> <span class="o">==</span> <span class="n">rdchem</span><span class="o">.</span><span class="n">HybridizationType</span><span class="o">.</span><span class="n">SP2</span><span class="p">)</span>
+    <span class="n">n_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">ring_atoms</span> <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">IsAtomInRingOfSize</span><span class="p">(</span><span class="n">ring_atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="mi">6</span><span class="p">)</span> <span class="ow">or</span> <span class="n">double_bonds</span> <span class="o">!=</span> <span class="mi">6</span> <span class="ow">or</span> <span class="n">n_count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">ring_atoms</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span> <span class="ow">and</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetTotalDegree</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="check_five_membered_ring"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.check_five_membered_ring">[docs]</a><span class="k">def</span> <span class="nf">check_five_membered_ring</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">ring</span><span class="p">):</span>
+    <span class="n">ring_atoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">molecule</span><span class="o">.</span><span class="n">GetAtomWithIdx</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">ring</span><span class="p">]</span>
+    <span class="n">double_bonds</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">ring_atoms</span> <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetHybridization</span><span class="p">()</span> <span class="o">==</span> <span class="n">rdchem</span><span class="o">.</span><span class="n">HybridizationType</span><span class="o">.</span><span class="n">SP2</span><span class="p">)</span>
+    <span class="n">ns_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">ring_atoms</span> <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">double_bonds</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">ns_count</span> <span class="o">&lt;=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="check_ring_no_oxy_sulph"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.check_ring_no_oxy_sulph">[docs]</a><span class="k">def</span> <span class="nf">check_ring_no_oxy_sulph</span><span class="p">(</span><span class="n">molecule</span><span class="p">):</span>
+    <span class="n">rings</span> <span class="o">=</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">AtomRings</span><span class="p">()</span>  
+    <span class="k">for</span> <span class="n">ring</span> <span class="ow">in</span> <span class="n">rings</span><span class="p">:</span>
+        <span class="n">ring_atoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">molecule</span><span class="o">.</span><span class="n">GetAtomWithIdx</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">ring</span><span class="p">]</span>
+        <span class="n">oxy_sulph_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">ring_atoms</span><span class="p">)</span>
+        
+        <span class="c1"># Check for oxygen atoms in the ring</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">ring</span><span class="p">:</span>
+            <span class="n">atom</span> <span class="o">=</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetAtomWithIdx</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        
+        <span class="k">if</span> <span class="n">oxy_sulph_count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="check_invalid_bonds"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.check_invalid_bonds">[docs]</a><span class="k">def</span> <span class="nf">check_invalid_bonds</span><span class="p">(</span><span class="n">molecule</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetBonds</span><span class="p">():</span>
+        <span class="n">bond_atoms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">bond</span><span class="o">.</span><span class="n">GetBeginAtom</span><span class="p">()</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">(),</span> <span class="n">bond</span><span class="o">.</span><span class="n">GetEndAtom</span><span class="p">()</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()])</span>
+        <span class="n">invalid_combinations</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">}]</span>
+        <span class="k">if</span> <span class="n">bond_atoms</span> <span class="ow">in</span> <span class="n">invalid_combinations</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="check_chain_double_bonds"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.check_chain_double_bonds">[docs]</a><span class="k">def</span> <span class="nf">check_chain_double_bonds</span><span class="p">(</span><span class="n">molecule</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetBonds</span><span class="p">():</span>
+        <span class="n">atom1</span> <span class="o">=</span> <span class="n">bond</span><span class="o">.</span><span class="n">GetBeginAtom</span><span class="p">()</span>
+        <span class="n">atom2</span> <span class="o">=</span> <span class="n">bond</span><span class="o">.</span><span class="n">GetEndAtom</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">atom1</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span> <span class="ow">and</span> <span class="n">atom2</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+            <span class="n">atom1_in_ring</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">IsAtomInRingOfSize</span><span class="p">(</span><span class="n">atom1</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="n">ring_size</span><span class="p">)</span> <span class="k">for</span> <span class="n">ring_size</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetNumAtoms</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">atom2_in_ring</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">IsAtomInRingOfSize</span><span class="p">(</span><span class="n">atom2</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="n">ring_size</span><span class="p">)</span> <span class="k">for</span> <span class="n">ring_size</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetNumAtoms</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">atom1_in_ring</span> <span class="ow">and</span> <span class="n">atom2_in_ring</span><span class="p">)</span> <span class="ow">and</span> <span class="n">bond</span><span class="o">.</span><span class="n">GetBondType</span><span class="p">()</span> <span class="o">!=</span> <span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">SINGLE</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="check_chain_n_c"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.check_chain_n_c">[docs]</a><span class="k">def</span> <span class="nf">check_chain_n_c</span><span class="p">(</span><span class="n">molecule</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetNeighbors</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">IsAtomInRingOfSize</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="mi">6</span><span class="p">)</span> <span class="ow">and</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">IsAtomInRingOfSize</span><span class="p">(</span><span class="n">neighbor</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="mi">6</span><span class="p">)):</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="satisfy_conditions"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.satisfy_conditions">[docs]</a><span class="k">def</span> <span class="nf">satisfy_conditions</span><span class="p">(</span><span class="n">molecule</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">check_isotope</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span> <span class="ow">and</span>
+        <span class="n">check_c_neigh_o</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span> <span class="ow">and</span>
+        <span class="n">check_rings</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span> <span class="ow">and</span>
+        <span class="n">check_ring_no_oxy_sulph</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span> <span class="ow">and</span>
+        <span class="n">check_invalid_bonds</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span> <span class="ow">and</span>
+        <span class="n">check_chain_double_bonds</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span> <span class="ow">and</span>
+        <span class="n">check_chain_n_c</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="process_image"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.process_image">[docs]</a><span class="k">def</span> <span class="nf">process_image</span><span class="p">(</span><span class="n">image_path</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">x_data</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">y_data</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="c1"># cubic spline interpolation</span>
+    <span class="n">cs</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">4000</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">cs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">}</span>
+    <span class="n">selected_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">selected_data</span> <span class="o">=</span> <span class="n">selected_df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">selected_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="load_model_and_features"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.load_model_and_features">[docs]</a><span class="k">def</span> <span class="nf">load_model_and_features</span><span class="p">():</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">TEXT_ENCODER_PARAMS_PATH</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">text_encoder_params</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">text_encoder</span> <span class="o">=</span> <span class="n">main</span><span class="o">.</span><span class="n">TextEncoder</span><span class="p">(</span><span class="n">text_encoder_params</span><span class="p">)</span>
+    <span class="n">loaded_model_params</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">MODEL_PARAMS_FILENAME</span><span class="p">)</span>
+    <span class="n">loaded_clip_model</span> <span class="o">=</span> <span class="n">main</span><span class="o">.</span><span class="n">CLIP</span><span class="p">(</span><span class="n">text_encoder</span><span class="p">)</span>
+    <span class="n">loaded_clip_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_model_params</span><span class="p">)</span>
+
+    <span class="n">loaded_text_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">TEXT_FEATURES_PATH</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loaded_clip_model</span><span class="p">,</span> <span class="n">loaded_text_features</span></div>
+
+<div class="viewcode-block" id="compute_similarity"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.compute_similarity">[docs]</a><span class="k">def</span> <span class="nf">compute_similarity</span><span class="p">(</span><span class="n">image_input</span><span class="p">,</span> <span class="n">clip_model</span><span class="p">,</span> <span class="n">text_features</span><span class="p">):</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+    <span class="n">clip_model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+    <span class="n">image_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">image_input</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">image_features</span> <span class="o">=</span> <span class="n">clip_model</span><span class="o">.</span><span class="n">encode_image</span><span class="p">(</span><span class="n">image_input</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+
+    <span class="n">image_features</span> <span class="o">=</span> <span class="n">image_features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+    <span class="n">normalized_image_features</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">image_features</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">normalized_text_features</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">text_features</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+    <span class="n">similarity_scores</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">normalized_image_features</span><span class="p">,</span> <span class="n">normalized_text_features</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">similarity_scores</span></div>
+
+<span class="c1"># 根据相似度得分对一系列分子进行排序，然后选择满足特定条件的前n个分子</span>
+<div class="viewcode-block" id="skip_and_update_top_n_ranking"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.skip_and_update_top_n_ranking">[docs]</a><span class="k">def</span> <span class="nf">skip_and_update_top_n_ranking</span><span class="p">(</span><span class="n">similarity_scores</span><span class="p">,</span> <span class="n">top_n</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+    <span class="c1"># 空列表存储分子和对应的相似度</span>
+    <span class="n">updated_predicted_smiles_and_scores</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">similarity_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">valid_smiles_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># 获取按相似度排序的分子索引</span>
+        <span class="n">sorted_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">similarity_scores</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="c1"># 遍历这些排序索引</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">sorted_indices</span><span class="p">:</span>
+            <span class="c1"># 获取对应索引的分子的SMILES表示</span>
+            <span class="n">smiles</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;smiles&#39;</span><span class="p">])[</span><span class="n">index</span><span class="p">]</span>
+            <span class="c1"># 将SMILES表示转化为分子对象</span>
+            <span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">smiles</span><span class="p">)</span>
+            
+            <span class="n">all_rings_satisfy_conditions</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">all_rings_satisfy_conditions</span> <span class="o">=</span> <span class="n">satisfy_conditions</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">all_rings_satisfy_conditions</span><span class="p">:</span>
+                <span class="n">score</span> <span class="o">=</span> <span class="n">similarity_scores</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">index</span><span class="p">]</span>
+                <span class="n">valid_smiles_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">smiles</span><span class="p">,</span> <span class="n">score</span><span class="p">))</span>
+                
+                <span class="c1"># 如果满足条件的分子数量达到了我们希望的数量（前n个）</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid_smiles_list</span><span class="p">)</span> <span class="o">==</span> <span class="n">top_n</span><span class="p">:</span>
+                    <span class="k">break</span>
+        <span class="c1"># 将满足条件的分子列表添加到最终的列表中</span>
+        <span class="n">updated_predicted_smiles_and_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">valid_smiles_list</span><span class="p">)</span>
+    
+    <span class="c1"># 包含了每个分子的前n个满足条件的分子以及它们的相似性分数</span>
+    <span class="k">return</span> <span class="n">updated_predicted_smiles_and_scores</span></div>
+
+<div class="viewcode-block" id="retrieve_small_molecules"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.retrieve_small_molecules">[docs]</a><span class="k">def</span> <span class="nf">retrieve_small_molecules</span><span class="p">(</span><span class="n">image_path</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;smile_ir.csv&#39;</span><span class="p">)</span>
+    <span class="n">image_input</span> <span class="o">=</span> <span class="n">process_image</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
+    <span class="n">loaded_clip_model</span><span class="p">,</span> <span class="n">loaded_text_features</span> <span class="o">=</span> <span class="n">load_model_and_features</span><span class="p">()</span>
+
+    <span class="n">similarity_scores</span> <span class="o">=</span> <span class="n">compute_similarity</span><span class="p">(</span><span class="n">image_input</span><span class="p">,</span> <span class="n">loaded_clip_model</span><span class="p">,</span> <span class="n">loaded_text_features</span><span class="p">)</span>
+
+    <span class="n">top_n</span> <span class="o">=</span> <span class="mi">40</span>
+    <span class="n">updated_predicted_smiles_and_scores</span> <span class="o">=</span> <span class="n">skip_and_update_top_n_ranking</span><span class="p">(</span><span class="n">similarity_scores</span><span class="p">,</span> <span class="n">top_n</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">predicted_smiles_list</span> <span class="ow">in</span> <span class="n">updated_predicted_smiles_and_scores</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">smiles</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">predicted_smiles_list</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;smiles&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">smiles</span><span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;smiles&#39;</span><span class="p">:</span> <span class="n">smiles</span><span class="p">,</span>
+                <span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="n">index</span><span class="p">,</span>
+                <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="n">score</span>
+            <span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="convert_data_to_smiles_scores"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.convert_data_to_smiles_scores">[docs]</a><span class="k">def</span> <span class="nf">convert_data_to_smiles_scores</span><span class="p">(</span><span class="n">retrieved_molecules</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the retrieved molecules data into a list of (SMILES, score) tuples.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[(</span><span class="n">entry</span><span class="p">[</span><span class="s1">&#39;smiles&#39;</span><span class="p">],</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">retrieved_molecules</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="display_molecules"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.display_molecules">[docs]</a><span class="k">def</span> <span class="nf">display_molecules</span><span class="p">(</span><span class="n">smiles_and_scores</span><span class="p">,</span> <span class="n">mols_per_row</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create and display a grid image of molecules with their associated scores.&quot;&quot;&quot;</span>
+    
+    <span class="c1"># Convert SMILES strings to RDKit molecule objects</span>
+    <span class="n">predicted_molecules</span> <span class="o">=</span> <span class="p">[</span><span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">smiles</span><span class="p">)</span> <span class="k">for</span> <span class="n">smiles</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">smiles_and_scores</span><span class="p">]</span>
+    
+    <span class="c1"># Create legends for each molecule</span>
+    <span class="n">legends</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">smiles</span><span class="si">}</span><span class="s2"> (score: </span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">smiles</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">smiles_and_scores</span><span class="p">)]</span>
+    
+    <span class="c1"># Create the grid image</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">MolsToGridImage</span><span class="p">(</span><span class="n">predicted_molecules</span><span class="p">,</span> <span class="n">molsPerRow</span><span class="o">=</span><span class="n">mols_per_row</span><span class="p">,</span> <span class="n">subImgSize</span><span class="o">=</span><span class="n">img_size</span><span class="p">,</span> <span class="n">legends</span><span class="o">=</span><span class="n">legends</span><span class="p">)</span>
+    
+    <span class="n">display</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    <span class="k">return</span> </div>
+
+<div class="viewcode-block" id="show_atom_number"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.show_atom_number">[docs]</a><span class="k">def</span> <span class="nf">show_atom_number</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+        <span class="n">atom</span><span class="o">.</span><span class="n">SetProp</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="n">mol</span></div>
+
+<span class="c1"># 环状结构都有哪些地方能连</span>
+<div class="viewcode-block" id="find_required_carbons"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.find_required_carbons">[docs]</a><span class="k">def</span> <span class="nf">find_required_carbons</span><span class="p">(</span><span class="n">smiles</span><span class="p">):</span>
+    <span class="c1"># 为SMILES补充H原子</span>
+    <span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">AddHs</span><span class="p">(</span><span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">smiles</span><span class="p">))</span>
+    
+    <span class="c1"># 创建一个列表来保存满足条件的C原子的索引</span>
+    <span class="n">required_carbons</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># 遍历分子中的所有原子</span>
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+        <span class="c1"># 判断该原子是否为C原子</span>
+        <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span>
+            <span class="c1"># 获取该原子的所有邻居原子</span>
+            <span class="n">neighbors</span> <span class="o">=</span> <span class="p">[</span><span class="n">neighbor</span> <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetNeighbors</span><span class="p">()]</span>
+            
+            <span class="c1"># 计算该原子连接的C原子数量</span>
+            <span class="n">carbon_neighbors</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">neighbor</span> <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">neighbors</span> <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span> <span class="ow">or</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span><span class="p">])</span>
+
+            <span class="c1"># 计算该原子连接的H原子数量</span>
+            <span class="n">hydrogen_neighbors</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">neighbor</span> <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">neighbors</span> <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span><span class="p">])</span>
+
+            <span class="c1"># 如果该C原子只与2个C原子相连，并且有1个H原子</span>
+            <span class="k">if</span> <span class="n">carbon_neighbors</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">hydrogen_neighbors</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">required_carbons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">())</span>
+    
+    <span class="k">return</span> <span class="n">required_carbons</span></div>
+
+<div class="viewcode-block" id="connect_rings_C4"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.connect_rings_C4">[docs]</a><span class="k">def</span> <span class="nf">connect_rings_C4</span><span class="p">(</span><span class="n">smiles1</span><span class="p">):</span>
+    <span class="n">smiles2</span> <span class="o">=</span> <span class="s1">&#39;CCCC&#39;</span>
+    <span class="n">carbons2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+
+    <span class="n">carbons1</span> <span class="o">=</span> <span class="n">find_required_carbons</span><span class="p">(</span><span class="n">smiles1</span><span class="p">)</span>
+
+    <span class="c1"># Check if no suitable carbon atom was found in the molecule</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">carbons1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No suitable carbon atom found in the molecule&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">mol1</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">smiles1</span><span class="p">)</span>
+    <span class="n">mol2</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">smiles2</span><span class="p">)</span>
+
+    <span class="c1"># 寻找smiles1中所有相邻的满足条件的碳原子对。</span>
+    <span class="n">index_pairs_carbons1</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">carbons1</span><span class="p">)):</span>
+        <span class="n">atom1</span> <span class="o">=</span> <span class="n">mol1</span><span class="o">.</span><span class="n">GetAtomWithIdx</span><span class="p">(</span><span class="n">carbons1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom1</span><span class="o">.</span><span class="n">GetNeighbors</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span> <span class="ow">and</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()</span> <span class="ow">in</span> <span class="n">carbons1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">carbons1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">():</span>
+                    <span class="n">index_pairs_carbons1</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">carbons1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()))</span>
+
+    <span class="c1"># 随机选择一对相邻的满足条件的碳原子。</span>
+    <span class="n">chosen_pair1</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">index_pairs_carbons1</span><span class="p">)</span>
+<span class="c1">#     print(&#39;chosen_pair1&#39;, chosen_pair1)</span>
+
+    <span class="c1"># Combine molecules</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">CombineMols</span><span class="p">(</span><span class="n">mol1</span><span class="p">,</span> <span class="n">mol2</span><span class="p">)</span>
+    
+    <span class="c1"># Create an editable molecule</span>
+    <span class="n">edit_combined</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">EditableMol</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>
+
+    <span class="c1"># The indices will change after combination, recalculate them</span>
+    <span class="n">index1</span> <span class="o">=</span> <span class="n">chosen_pair1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># this is for the mol1</span>
+    <span class="n">index2</span> <span class="o">=</span> <span class="n">chosen_pair1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># this is for the mol1</span>
+    <span class="n">index3</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mol1</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">())</span>  <span class="c1"># this is for the first atom of mol2</span>
+    <span class="n">index4</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mol1</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">())</span> <span class="o">+</span> <span class="mi">3</span>  <span class="c1"># this is for the last atom of mol2</span>
+
+    <span class="c1"># Define a set to store the indices of all atoms in mol2 (butane) in the merged molecule</span>
+    <span class="n">butane_indices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mol1</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">()),</span> <span class="nb">len</span><span class="p">(</span><span class="n">mol1</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">())</span> <span class="o">+</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">butane_indices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">index1</span><span class="p">)</span>
+    <span class="n">butane_indices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">index2</span><span class="p">)</span>
+<span class="c1">#     print(butane_indices)</span>
+    
+    <span class="c1"># Add the bonds</span>
+    <span class="n">edit_combined</span><span class="o">.</span><span class="n">AddBond</span><span class="p">(</span><span class="n">index1</span><span class="p">,</span> <span class="n">index3</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">BondType</span><span class="o">.</span><span class="n">SINGLE</span><span class="p">)</span>
+    <span class="n">edit_combined</span><span class="o">.</span><span class="n">AddBond</span><span class="p">(</span><span class="n">index2</span><span class="p">,</span> <span class="n">index4</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">BondType</span><span class="o">.</span><span class="n">SINGLE</span><span class="p">)</span>
+
+    <span class="c1"># Get the modified molecule</span>
+    <span class="n">connected_mol</span> <span class="o">=</span> <span class="n">edit_combined</span><span class="o">.</span><span class="n">GetMol</span><span class="p">()</span>
+
+    <span class="c1"># Change the bond type of the bonds within butane to AROMATIC</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">butane_indices</span><span class="p">:</span>
+        <span class="n">atom</span> <span class="o">=</span> <span class="n">connected_mol</span><span class="o">.</span><span class="n">GetAtomWithIdx</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetNeighbors</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()</span> <span class="ow">in</span> <span class="n">butane_indices</span><span class="p">:</span>
+                <span class="n">bond</span> <span class="o">=</span> <span class="n">connected_mol</span><span class="o">.</span><span class="n">GetBondBetweenAtoms</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">bond</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">bond</span><span class="o">.</span><span class="n">SetBondType</span><span class="p">(</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">AROMATIC</span><span class="p">)</span>
+
+    
+    <span class="c1"># Clean up the molecule</span>
+    <span class="n">Chem</span><span class="o">.</span><span class="n">SanitizeMol</span><span class="p">(</span><span class="n">connected_mol</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolToSmiles</span><span class="p">(</span><span class="n">connected_mol</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="find_required_aldehyde_carbons"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.find_required_aldehyde_carbons">[docs]</a><span class="k">def</span> <span class="nf">find_required_aldehyde_carbons</span><span class="p">(</span><span class="n">smiles</span><span class="p">):</span>
+    <span class="c1"># 从SMILES字符串创建分子对象并添加氢</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">AddHs</span><span class="p">(</span><span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">smiles</span><span class="p">))</span>
+
+    <span class="c1"># 存储满足条件的碳原子的索引</span>
+    <span class="n">carbons</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># 遍历分子中的每个原子</span>
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+            <span class="n">neighbors</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">GetNeighbors</span><span class="p">()</span>
+            
+            <span class="c1"># 查找有一个C、一个H和一个O的邻居的原子</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="n">neighbor</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">neighbors</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">symbols</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">symbols</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">symbols</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;O&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">carbons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">carbons</span></div>
+
+<span class="c1"># 羰基连接的贝塔C的邻居至少要有一个的邻居数量为3以下，那么返回False</span>
+<div class="viewcode-block" id="satisfy_beta_carbons_conditions"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.satisfy_beta_carbons_conditions">[docs]</a><span class="k">def</span> <span class="nf">satisfy_beta_carbons_conditions</span><span class="p">(</span><span class="n">smiles</span><span class="p">):</span>
+    <span class="c1"># 从SMILES字符串创建分子对象并添加氢</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">AddHs</span><span class="p">(</span><span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">smiles</span><span class="p">))</span>
+
+    <span class="c1"># 获取羰基碳的索引</span>
+    <span class="n">aldehyde_carbons</span> <span class="o">=</span> <span class="n">find_required_aldehyde_carbons</span><span class="p">(</span><span class="n">smiles</span><span class="p">)</span>
+
+    <span class="c1"># 遍历每一个羰基碳</span>
+    <span class="k">for</span> <span class="n">aldehyde_carbon</span> <span class="ow">in</span> <span class="n">aldehyde_carbons</span><span class="p">:</span>
+        <span class="c1"># 获取这个羰基碳的阿尔法碳</span>
+        <span class="n">alpha_carbons</span> <span class="o">=</span> <span class="p">[</span><span class="n">neighbor</span> <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">GetAtomWithIdx</span><span class="p">(</span><span class="n">aldehyde_carbon</span><span class="p">)</span><span class="o">.</span><span class="n">GetNeighbors</span><span class="p">()</span> <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">]</span>
+
+        <span class="c1"># 如果没有阿尔法碳，返回 False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">alpha_carbons</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># 遍历每一个阿尔法碳</span>
+        <span class="k">for</span> <span class="n">alpha_carbon</span> <span class="ow">in</span> <span class="n">alpha_carbons</span><span class="p">:</span>
+            <span class="c1"># 获取这个阿尔法碳的所有贝塔碳，并检查是否有氢连接</span>
+            <span class="n">beta_carbons</span> <span class="o">=</span> <span class="p">[</span><span class="n">neighbor</span> <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">alpha_carbon</span><span class="o">.</span><span class="n">GetNeighbors</span><span class="p">()</span> <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">]</span>
+            <span class="n">beta_carbons</span> <span class="o">=</span> <span class="p">[</span><span class="n">beta</span> <span class="k">for</span> <span class="n">beta</span> <span class="ow">in</span> <span class="n">beta_carbons</span> <span class="k">if</span> <span class="n">beta</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">()</span> <span class="o">!=</span> <span class="n">aldehyde_carbon</span><span class="p">]</span>  <span class="c1"># 去除阿尔法碳索引</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="s1">&#39;H&#39;</span> <span class="ow">in</span> <span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">GetSymbol</span><span class="p">()</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">beta</span><span class="o">.</span><span class="n">GetNeighbors</span><span class="p">()]</span> <span class="k">for</span> <span class="n">beta</span> <span class="ow">in</span> <span class="n">beta_carbons</span><span class="p">]):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="filter_smiles_and_scores"><a class="viewcode-back" href="../../api/ClipIRMol.html#coal.ClipIRMol.filter_smiles_and_scores">[docs]</a><span class="k">def</span> <span class="nf">filter_smiles_and_scores</span><span class="p">(</span><span class="n">updated_predicted_smiles_and_scores</span><span class="p">):</span>
+    <span class="c1"># 存储满足条件的元组</span>
+    <span class="n">filtered_smiles_and_scores</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">smiles_and_score</span> <span class="ow">in</span> <span class="n">updated_predicted_smiles_and_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="c1"># 获取SMILES字符串和分数</span>
+        <span class="n">smiles</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">smiles_and_score</span>
+        
+        <span class="c1"># 判断是否满足贝塔碳的条件</span>
+        <span class="k">if</span> <span class="n">satisfy_beta_carbons_conditions</span><span class="p">(</span><span class="n">smiles</span><span class="p">):</span>
+            <span class="n">filtered_smiles_and_scores</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">smiles</span><span class="p">,</span> <span class="n">score</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">filtered_smiles_and_scores</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haodong Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
