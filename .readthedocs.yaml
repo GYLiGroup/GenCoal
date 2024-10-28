@@ -6,8 +6,11 @@ build:
     python: "3.8"
 
 python:
+  version: "3.8"
   install:
-    - requirements: requirements.txt  # 设置 requirements.txt 文件路径
+    - requirements: requirements.txt  # Ensure `sphinx_rtd_theme` is in this file
+    - pip:
+        - sphinx_rtd_theme  # Add any additional dependencies here if missing from `requirements.txt`
 
 sphinx:
   configuration: docs/source/conf.py
