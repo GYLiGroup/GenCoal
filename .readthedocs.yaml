@@ -1,28 +1,18 @@
-# .readthedocs.yaml
-
-# Basic configuration
 version: 2
 
-# Build tools
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.8"  # Specify Python version used for the environment
+    python: "3.8"
 
-# Python environment
 python:
   install:
-    - requirements: requirements.txt  # Specify the requirements file if needed
-    - method: pip
-      path: .  # Install any additional packages from the current directory
-    - conda:
-        environment: environment.yml  # Use environment.yml for detailed dependencies
+    - requirements: requirements.txt  # 设置 requirements.txt 文件路径
 
-# Additional dependencies for Read the Docs
-# These dependencies are often needed for building documentation on Read the Docs
 sphinx:
-  configuration: docs/source/conf.py  # Sphinx configuration path
+  configuration: docs/source/conf.py
 
-# Environment variables (if needed)
-# env:
-#   YOUR_VARIABLE_NAME: "value"
+formats:
+  - html
+  - pdf
+  - epub
