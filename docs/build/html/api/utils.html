@@ -93,8 +93,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.getPackage"><code class="docutils literal notranslate"><span class="pre">getPackage()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.getTarget"><code class="docutils literal notranslate"><span class="pre">getTarget()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.merge_count_atoms"><code class="docutils literal notranslate"><span class="pre">merge_count_atoms()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#coal.utils.parallel_backtrack_combinations"><code class="docutils literal notranslate"><span class="pre">parallel_backtrack_combinations()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.process_smiles"><code class="docutils literal notranslate"><span class="pre">process_smiles()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.read_json"><code class="docutils literal notranslate"><span class="pre">read_json()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#coal.utils.recommended_carbonyl_hydroxyl"><code class="docutils literal notranslate"><span class="pre">recommended_carbonyl_hydroxyl()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.repeat_connect_rings_C4"><code class="docutils literal notranslate"><span class="pre">repeat_connect_rings_C4()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.select_carbons_from_different_rings"><code class="docutils literal notranslate"><span class="pre">select_carbons_from_different_rings()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.show_atom_number"><code class="docutils literal notranslate"><span class="pre">show_atom_number()</span></code></a></li>
@@ -745,21 +747,24 @@ The sorting criteria prioritize compounds with higher ratios of certain elements
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.utils.getTarget">
-<span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">getTarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C90</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ele_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_moles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#getTarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.getTarget" title="Permalink to this definition"></a></dt>
-<dd><p>Adjusts the target atom counts for a chemical compound based on specified carbon moles, elemental mass ratios, a carbon atom rate, coal type, and the percentages of carboxyl and hydroxyl groups.</p>
+<span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">getTarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C90</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ele_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_moles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">carbonyl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hydroxyl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#getTarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.getTarget" title="Permalink to this definition"></a></dt>
+<dd><p>Adjusts the target atom counts for a chemical compound based on specified carbon moles,
+elemental mass ratios, a carbon atom rate, coal type, and the percentages of carboxyl and hydroxyl groups.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>C90</strong> (<em>float</em>) – The degree of aromaticity.</p></li>
 <li><p><strong>ele_ratio</strong> (<em>dict</em>) – Element symbols (‘C’, ‘H’, ‘O’, ‘N’, ‘S’) as keys and their mass percentages as values.</p></li>
 <li><p><strong>C_moles</strong> (<em>float</em>) – Number of C atom.</p></li>
-<li><p><strong>type</strong> (<em>str</em>) – Type of coal, such as ‘lignite’.</p></li>
+<li><p><strong>compound_type</strong> (<em>str</em>) – Type of coal, such as ‘lignite’.</p></li>
+<li><p><strong>carbonyl</strong> (<em>int</em>) – Number of carbonyl groups.</p></li>
+<li><p><strong>hydroxyl</strong> (<em>int</em>) – Number of hydroxyl groups.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>atom_num</strong> (<em>dict</em>) – Calculate chemical fomula.</p></li>
-<li><p><strong>adjusted_target</strong> (<em>dict</em>) – Target number of atoms</p></li>
+<li><p><strong>atom_num</strong> (<em>dict</em>) – Calculate chemical formula.</p></li>
+<li><p><strong>adjusted_target</strong> (<em>dict</em>) – Target number of atoms.</p></li>
 </ul>
 </p>
 </dd>
@@ -784,6 +789,28 @@ The sorting criteria prioritize compounds with higher ratios of certain elements
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="coal.utils.parallel_backtrack_combinations">
+<span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">parallel_backtrack_combinations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nested_dict_H</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selection_dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_O_S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#parallel_backtrack_combinations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.parallel_backtrack_combinations" title="Permalink to this definition"></a></dt>
+<dd><p>Parallelized version of backtracking to find combinations that match target_O_S.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nested_dict_H</strong> (<em>dict</em>) – A nested dictionary where the first level keys are H (hydrogen) counts.</p></li>
+<li><p><strong>selection_dic</strong> (<em>dict</em>) – A dictionary specifying total counts for each H key in the solution.</p></li>
+<li><p><strong>target_O_S</strong> (<em>int</em>) – The target sum of O_S values to match.</p></li>
+<li><p><strong>n_jobs</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of parallel jobs (cores) to use.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of dictionaries, each representing a valid combination.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="coal.utils.process_smiles">
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">process_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#process_smiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.process_smiles" title="Permalink to this definition"></a></dt>
 <dd><p>Sorts a list of SMILES strings in a zigzag pattern based on the sum of atomic numbers in each molecule.</p>
@@ -803,6 +830,11 @@ The sorting criteria prioritize compounds with higher ratios of certain elements
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.utils.read_json">
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#read_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.read_json" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="coal.utils.recommended_carbonyl_hydroxyl">
+<span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">recommended_carbonyl_hydroxyl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C_moles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ele_ratio</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#recommended_carbonyl_hydroxyl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.recommended_carbonyl_hydroxyl" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">

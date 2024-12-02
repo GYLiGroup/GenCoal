@@ -99,6 +99,9 @@
 <span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">simps</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
 <span class="c1"># NMR integral ------------ create json</span>
 <div class="viewcode-block" id="calculate_C90_C180"><a class="viewcode-back" href="../../api/utils.html#coal.utils.calculate_C90_C180">[docs]</a><span class="k">def</span> <span class="nf">calculate_C90_C180</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
     <span class="c1"># 导入数据</span>
@@ -266,11 +269,34 @@
 
     <span class="k">return</span> <span class="n">sorted_smiles_list</span></div>
 
+<div class="viewcode-block" id="recommended_carbonyl_hydroxyl"><a class="viewcode-back" href="../../api/utils.html#coal.utils.recommended_carbonyl_hydroxyl">[docs]</a><span class="k">def</span> <span class="nf">recommended_carbonyl_hydroxyl</span><span class="p">(</span><span class="n">C_moles</span><span class="p">,</span> <span class="n">ele_ratio</span><span class="p">):</span>
+    <span class="c1"># Initial calculations</span>
+    <span class="n">atom_num</span> <span class="o">=</span> <span class="n">calculate_element_moles</span><span class="p">(</span><span class="n">C_moles</span><span class="p">,</span> <span class="n">ele_ratio</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the number of carbonyl and hydroxyl groups based on atom counts and compound type.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atom_num : dict</span>
+<span class="sd">               Atom counts for &#39;C&#39;, &#39;H&#39;, &#39;O&#39;, &#39;N&#39;, &#39;S&#39;.</span>
 
-<div class="viewcode-block" id="getTarget"><a class="viewcode-back" href="../../api/utils.html#coal.utils.getTarget">[docs]</a><span class="k">def</span> <span class="nf">getTarget</span><span class="p">(</span><span class="n">C90</span><span class="p">,</span> <span class="n">C180</span><span class="p">,</span> <span class="n">ele_ratio</span><span class="p">,</span> <span class="n">C_moles</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Adjusts the target atom counts for a chemical compound based on specified carbon moles, elemental mass ratios, a carbon atom rate, coal type, and the percentages of carboxyl and hydroxyl groups.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    carbonyl : int</span>
+<span class="sd">               Number of carbonyl groups.</span>
+<span class="sd">    hydroxyl : int</span>
+<span class="sd">               Number of hydroxyl groups.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total_mass</span> <span class="o">=</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">12</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">14</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">32</span>
+
+    <span class="n">carbonyl</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="mf">0.01</span> <span class="o">*</span> <span class="n">total_mass</span><span class="p">)</span> <span class="o">/</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">hydroxyl</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="mf">0.02</span> <span class="o">*</span> <span class="n">total_mass</span><span class="p">)</span> <span class="o">/</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">carbonyl</span><span class="p">,</span> <span class="n">hydroxyl</span></div>
+
+<div class="viewcode-block" id="getTarget"><a class="viewcode-back" href="../../api/utils.html#coal.utils.getTarget">[docs]</a><span class="k">def</span> <span class="nf">getTarget</span><span class="p">(</span><span class="n">C90</span><span class="p">,</span> <span class="n">ele_ratio</span><span class="p">,</span> <span class="n">C_moles</span><span class="p">,</span> <span class="n">carbonyl</span><span class="p">,</span> <span class="n">hydroxyl</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adjusts the target atom counts for a chemical compound based on specified carbon moles,</span>
+<span class="sd">    elemental mass ratios, a carbon atom rate, coal type, and the percentages of carboxyl and hydroxyl groups.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -280,51 +306,35 @@
 <span class="sd">                Element symbols (&#39;C&#39;, &#39;H&#39;, &#39;O&#39;, &#39;N&#39;, &#39;S&#39;) as keys and their mass percentages as values.</span>
 <span class="sd">    C_moles : float</span>
 <span class="sd">              Number of C atom.</span>
-<span class="sd">    type : str</span>
-<span class="sd">           Type of coal, such as &#39;lignite&#39;.</span>
+<span class="sd">    compound_type : str</span>
+<span class="sd">                    Type of coal, such as &#39;lignite&#39;.</span>
+<span class="sd">    carbonyl : int</span>
+<span class="sd">               Number of carbonyl groups.</span>
+<span class="sd">    hydroxyl : int</span>
+<span class="sd">               Number of hydroxyl groups.</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    atom_num : dict</span>
-<span class="sd">               Calculate chemical fomula.</span>
+<span class="sd">               Calculate chemical formula.</span>
 <span class="sd">    adjusted_target : dict</span>
-<span class="sd">                      Target number of atoms</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">                      Target number of atoms.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Initial calculations</span>
     <span class="n">atom_num</span> <span class="o">=</span> <span class="n">calculate_element_moles</span><span class="p">(</span><span class="n">C_moles</span><span class="p">,</span> <span class="n">ele_ratio</span><span class="p">)</span>
 
-    <span class="c1"># Check if the sum of carbonyl and hydroxyl exceeds the total number of oxygen atoms</span>
-    <span class="c1"># if carbonyl + hydroxyl &gt;= atom_num[&#39;O&#39;]:</span>
-    <span class="c1">#     carbonyl = atom_num[&#39;O&#39;] - hydroxyl</span>
-    <span class="c1">#     hydroxyl = 0</span>
+    <span class="c1"># Adjust targets based on carbonyl and hydroxyl values</span>
+    <span class="n">adjusted_target</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;C_N_ar&#39;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">C90</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">]),</span>
+        <span class="s1">&#39;C_al&#39;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">C90</span><span class="p">)),</span>
+        <span class="s1">&#39;O_S&#39;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">carbonyl</span> <span class="o">-</span> <span class="n">hydroxyl</span><span class="p">),</span>
+        <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
+    <span class="p">}</span>
 
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model has </span><span class="si">{</span><span class="n">carbonyl</span><span class="si">}</span><span class="s2"> O atom in carbonyl&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model has </span><span class="si">{</span><span class="n">hydroxyl</span><span class="si">}</span><span class="s2"> O atom in hydroxyl&quot;</span><span class="p">)</span>
     
-
-    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;bitumite&#39;</span><span class="p">:</span>
-        <span class="n">carbonyl</span> <span class="o">=</span>  <span class="mi">0</span>
-        <span class="n">hydroxyl</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="c1"># Adjust for lignite specifics</span>
-        <span class="n">adjusted_target</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;C_N_ar&#39;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">C90</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">]),</span>
-            <span class="s1">&#39;C_al&#39;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">C90</span><span class="p">)),</span>
-            <span class="s1">&#39;O_S&#39;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">-</span> <span class="n">carbonyl</span> <span class="o">-</span> <span class="n">hydroxyl</span><span class="p">),</span>
-            <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
-        <span class="p">}</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model has </span><span class="si">{</span><span class="n">carbonyl</span><span class="si">}</span><span class="s2"> O atom in carbonyl&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model has </span><span class="si">{</span><span class="n">hydroxyl</span><span class="si">}</span><span class="s2"> O atom in hydroxyl&quot;</span><span class="p">)</span>
-
-    <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;lignite&#39;</span><span class="p">:</span>
-        <span class="n">carbonyl</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="mf">0.01</span> <span class="o">*</span> <span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">12</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">14</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">32</span><span class="p">))</span> <span class="o">/</span> <span class="mi">16</span><span class="p">)</span>
-        <span class="n">hydroxyl</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="mf">0.02</span> <span class="o">*</span> <span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">12</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">14</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">32</span><span class="p">))</span> <span class="o">/</span> <span class="mi">16</span><span class="p">)</span>
-        <span class="n">adjusted_target</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;C_N_ar&#39;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">C90</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">]),</span>
-            <span class="s1">&#39;C_al&#39;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">C90</span><span class="p">)),</span>
-            <span class="s1">&#39;O_S&#39;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">-</span> <span class="n">carbonyl</span> <span class="o">-</span> <span class="n">hydroxyl</span><span class="p">),</span>
-            <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="n">atom_num</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
-        <span class="p">}</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model has </span><span class="si">{</span><span class="n">carbonyl</span><span class="si">}</span><span class="s2"> O atom in carbonyl&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model has </span><span class="si">{</span><span class="n">hydroxyl</span><span class="si">}</span><span class="s2"> O atom in hydroxyl&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">atom_num</span><span class="p">,</span> <span class="n">adjusted_target</span></div>
-
     
 
 <div class="viewcode-block" id="build_H_nested_dict"><a class="viewcode-back" href="../../api/utils.html#coal.utils.build_H_nested_dict">[docs]</a><span class="k">def</span> <span class="nf">build_H_nested_dict</span><span class="p">(</span><span class="n">sorted_choices</span><span class="p">):</span>
@@ -427,46 +437,6 @@
         <span class="n">cn_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_dict</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cn_list</span></div>
 
-<span class="k">def</span> <span class="nf">backtrack_combinations</span><span class="p">(</span><span class="n">nested_dict_H</span><span class="p">,</span> <span class="n">selection_dic</span><span class="p">,</span> <span class="n">target_O_S</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
-    <span class="n">H_keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">nested_dict_H</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">solutions</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">memo</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">def</span> <span class="nf">convert_to_hashable</span><span class="p">(</span><span class="n">current_selection</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">current_selection</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-
-    <span class="k">def</span> <span class="nf">backtrack</span><span class="p">(</span><span class="n">remaining_O_S</span><span class="p">,</span> <span class="n">H_index</span><span class="p">,</span> <span class="n">current_selection</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">depth</span> <span class="o">&gt;</span> <span class="n">max_depth</span><span class="p">:</span>  <span class="c1"># 检查是否超过了最大深度</span>
-            <span class="k">return</span>
-        
-        <span class="n">hashable_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">remaining_O_S</span><span class="p">,</span> <span class="n">H_index</span><span class="p">,</span> <span class="n">convert_to_hashable</span><span class="p">(</span><span class="n">current_selection</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">hashable_key</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>
-            <span class="k">return</span>
-
-        <span class="k">if</span> <span class="n">remaining_O_S</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">current_selection</span><span class="p">[</span><span class="n">H</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">==</span> <span class="n">selection_dic</span><span class="p">[</span><span class="n">H</span><span class="p">]</span> <span class="k">for</span> <span class="n">H</span> <span class="ow">in</span> <span class="n">H_keys</span><span class="p">):</span>
-            <span class="n">solutions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">current_selection</span><span class="p">))</span>
-            <span class="k">return</span>
-        
-        <span class="k">if</span> <span class="n">H_index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">H_keys</span><span class="p">)</span> <span class="ow">or</span> <span class="n">remaining_O_S</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span>
-        
-        <span class="n">current_H</span> <span class="o">=</span> <span class="n">H_keys</span><span class="p">[</span><span class="n">H_index</span><span class="p">]</span>
-        <span class="n">backtrack</span><span class="p">(</span><span class="n">remaining_O_S</span><span class="p">,</span> <span class="n">H_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">current_selection</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Increase depth</span>
-
-        <span class="k">for</span> <span class="n">O_S</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">nested_dict_H</span><span class="p">[</span><span class="n">current_H</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">current_selection</span><span class="p">[</span><span class="n">current_H</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">&lt;</span> <span class="n">selection_dic</span><span class="p">[</span><span class="n">current_H</span><span class="p">]:</span>
-                <span class="n">current_selection</span><span class="p">[</span><span class="n">current_H</span><span class="p">][</span><span class="n">O_S</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">backtrack</span><span class="p">(</span><span class="n">remaining_O_S</span> <span class="o">-</span> <span class="n">O_S</span><span class="p">,</span> <span class="n">H_index</span><span class="p">,</span> <span class="n">current_selection</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Increase depth</span>
-                <span class="n">current_selection</span><span class="p">[</span><span class="n">current_H</span><span class="p">][</span><span class="n">O_S</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
-
-        <span class="n">memo</span><span class="p">[</span><span class="n">hashable_key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-                    
-    <span class="n">initial_selection</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">{</span><span class="n">subkey</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">subkey</span> <span class="ow">in</span> <span class="n">nested_dict_H</span><span class="p">[</span><span class="n">key</span><span class="p">]}</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">nested_dict_H</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
-    <span class="n">backtrack</span><span class="p">(</span><span class="n">target_O_S</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">initial_selection</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># Start with depth 0</span>
-
-    <span class="k">return</span> <span class="n">solutions</span>
-
-
 <div class="viewcode-block" id="backtrack_combinations"><a class="viewcode-back" href="../../api/utils.html#coal.utils.backtrack_combinations">[docs]</a><span class="k">def</span> <span class="nf">backtrack_combinations</span><span class="p">(</span><span class="n">nested_dict_H</span><span class="p">,</span> <span class="n">selection_dic</span><span class="p">,</span> <span class="n">target_O_S</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Finds combinations within a nested dictionary that match a specified target for oxygen and sulfur count (O_S) using backtracking.</span>
@@ -538,6 +508,115 @@
     <span class="n">backtrack</span><span class="p">(</span><span class="n">target_O_S</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">initial_selection</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># Start backtracking with initial conditions</span>
 
     <span class="k">return</span> <span class="n">solutions</span></div>
+
+
+<div class="viewcode-block" id="parallel_backtrack_combinations"><a class="viewcode-back" href="../../api/utils.html#coal.utils.parallel_backtrack_combinations">[docs]</a><span class="k">def</span> <span class="nf">parallel_backtrack_combinations</span><span class="p">(</span><span class="n">nested_dict_H</span><span class="p">,</span> <span class="n">selection_dic</span><span class="p">,</span> <span class="n">target_O_S</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">40</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parallelized version of backtracking to find combinations that match target_O_S.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nested_dict_H : dict</span>
+<span class="sd">        A nested dictionary where the first level keys are H (hydrogen) counts.</span>
+<span class="sd">    selection_dic : dict</span>
+<span class="sd">        A dictionary specifying total counts for each H key in the solution.</span>
+<span class="sd">    target_O_S : int</span>
+<span class="sd">        The target sum of O_S values to match.</span>
+<span class="sd">    n_jobs : int, optional</span>
+<span class="sd">        Number of parallel jobs (cores) to use.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        A list of dictionaries, each representing a valid combination.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Sort H keys in descending order for optimization</span>
+    <span class="n">H_keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">nested_dict_H</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">convert_to_hashable</span><span class="p">(</span><span class="n">current_selection</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the current selection dictionary into a hashable type (tuple) for memoization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">current_selection</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">backtrack</span><span class="p">(</span><span class="n">remaining_O_S</span><span class="p">,</span> <span class="n">H_index</span><span class="p">,</span> <span class="n">current_selection</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recursive backtracking function to explore combinations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Base case: Stop if maximum depth is exceeded</span>
+        <span class="k">if</span> <span class="n">depth</span> <span class="o">&gt;</span> <span class="n">max_depth</span><span class="p">:</span>  <span class="c1"># Max depth hardcoded here</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># Check memo to avoid re-exploring known paths</span>
+        <span class="n">hashable_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">remaining_O_S</span><span class="p">,</span> <span class="n">H_index</span><span class="p">,</span> <span class="n">convert_to_hashable</span><span class="p">(</span><span class="n">current_selection</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">hashable_key</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># Successful case</span>
+        <span class="k">if</span> <span class="n">remaining_O_S</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="n">current_selection</span><span class="p">[</span><span class="n">H</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">==</span> <span class="n">selection_dic</span><span class="p">[</span><span class="n">H</span><span class="p">]</span> <span class="k">for</span> <span class="n">H</span> <span class="ow">in</span> <span class="n">H_keys</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">current_selection</span><span class="p">)]</span>
+
+        <span class="c1"># Base case: Stop if index out of bounds or negative target</span>
+        <span class="k">if</span> <span class="n">H_index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">H_keys</span><span class="p">)</span> <span class="ow">or</span> <span class="n">remaining_O_S</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">current_H</span> <span class="o">=</span> <span class="n">H_keys</span><span class="p">[</span><span class="n">H_index</span><span class="p">]</span>
+        <span class="n">solutions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Explore next H value without adding current H</span>
+        <span class="n">solutions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">backtrack</span><span class="p">(</span><span class="n">remaining_O_S</span><span class="p">,</span> <span class="n">H_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">current_selection</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">memo</span><span class="p">))</span>
+
+        <span class="c1"># Try adding current H and explore further</span>
+        <span class="k">for</span> <span class="n">O_S</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">nested_dict_H</span><span class="p">[</span><span class="n">current_H</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">current_selection</span><span class="p">[</span><span class="n">current_H</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">&lt;</span> <span class="n">selection_dic</span><span class="p">[</span><span class="n">current_H</span><span class="p">]:</span>
+                <span class="n">current_selection</span><span class="p">[</span><span class="n">current_H</span><span class="p">][</span><span class="n">O_S</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">solutions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                    <span class="n">backtrack</span><span class="p">(</span><span class="n">remaining_O_S</span> <span class="o">-</span> <span class="n">O_S</span><span class="p">,</span> <span class="n">H_index</span><span class="p">,</span> <span class="n">current_selection</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">current_selection</span><span class="p">[</span><span class="n">current_H</span><span class="p">][</span><span class="n">O_S</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="n">memo</span><span class="p">[</span><span class="n">hashable_key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">solutions</span>
+
+    <span class="k">def</span> <span class="nf">generate_subtasks</span><span class="p">(</span><span class="n">nested_dict_H</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate finer-grained subtasks for parallelization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">subtasks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">H_key</span><span class="p">,</span> <span class="n">sub_dict</span> <span class="ow">in</span> <span class="n">nested_dict_H</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">O_S_key</span> <span class="ow">in</span> <span class="n">sub_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">subtasks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">H_key</span><span class="p">,</span> <span class="n">O_S_key</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">subtasks</span>
+
+    <span class="k">def</span> <span class="nf">backtrack_for_subtask</span><span class="p">(</span><span class="n">H_key</span><span class="p">,</span> <span class="n">O_S_key</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform backtracking for a specific H and O_S combination.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">memo</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">initial_selection</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="p">{</span><span class="n">subkey</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">subkey</span> <span class="ow">in</span> <span class="n">nested_dict_H</span><span class="p">[</span><span class="n">key</span><span class="p">]}</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">nested_dict_H</span>
+        <span class="p">}</span>
+        <span class="n">initial_selection</span><span class="p">[</span><span class="n">H_key</span><span class="p">][</span><span class="n">O_S_key</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c1"># Initialize with one choice</span>
+        <span class="n">remaining_O_S</span> <span class="o">=</span> <span class="n">target_O_S</span> <span class="o">-</span> <span class="n">O_S_key</span>
+        <span class="k">return</span> <span class="n">backtrack</span><span class="p">(</span><span class="n">remaining_O_S</span><span class="p">,</span> <span class="n">H_keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">H_key</span><span class="p">),</span> <span class="n">initial_selection</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
+
+    <span class="c1"># Generate finer-grained subtasks</span>
+    <span class="n">subtasks</span> <span class="o">=</span> <span class="n">generate_subtasks</span><span class="p">(</span><span class="n">nested_dict_H</span><span class="p">)</span>
+
+    <span class="c1"># Parallel execution</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)(</span>
+        <span class="n">delayed</span><span class="p">(</span><span class="n">backtrack_for_subtask</span><span class="p">)(</span><span class="n">H_key</span><span class="p">,</span> <span class="n">O_S_key</span><span class="p">)</span> <span class="k">for</span> <span class="n">H_key</span><span class="p">,</span> <span class="n">O_S_key</span> <span class="ow">in</span> <span class="n">subtasks</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Combine results</span>
+    <span class="n">combined_solutions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+        <span class="n">combined_solutions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">combined_solutions</span></div>
+
 
 <div class="viewcode-block" id="find_matching_indices"><a class="viewcode-back" href="../../api/utils.html#coal.utils.find_matching_indices">[docs]</a><span class="k">def</span> <span class="nf">find_matching_indices</span><span class="p">(</span><span class="n">selection</span><span class="p">,</span> <span class="n">sorted_choices</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
