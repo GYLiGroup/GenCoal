@@ -928,14 +928,14 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Connects two molecules using two methane molecules to simulate the addition of methyl groups at specified carbon atoms.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    mol1, mol2 : RDKit Mol</span>
 <span class="sd">        The molecule objects to be connected.</span>
 <span class="sd">    chosen_pair1, chosen_pair2 : tuple</span>
 <span class="sd">        Pairs of carbon atom indices in mol1 and mol2, respectively, where the methane molecules will be connected.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    RDKit Mol</span>
 <span class="sd">        A new RDKit Mol object that represents the connected molecule structure.</span>
@@ -969,14 +969,14 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Finds index pairs of carbon atoms within a molecule for connection.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    carbons : list of int</span>
 <span class="sd">        A list containing indices of carbon atoms within the molecule that are suitable for connection.</span>
 <span class="sd">    mol : RDKit Mol object</span>
 <span class="sd">        The molecule in which the carbon atoms are located.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list of tuples</span>
 <span class="sd">        A list where each tuple contains two indices representing a pair of carbon atoms.</span>
@@ -996,12 +996,12 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Connects two rings from a list of molecule tuples by adding two methane groups between them.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    molecules_tuple_list : list of tuples</span>
 <span class="sd">        A list where each tuple contains a SMILES string of a molecule and a list of carbon atom indices.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    SMILES</span>
 <span class="sd">        A new SMILES string that represents the connected molecule structure.</span>
@@ -1379,7 +1379,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">   aliphatic_carbons : list</span>
+<span class="sd">    aliphatic_carbons : list</span>
 <span class="sd">        A list of indices corresponding to aliphatic carbon atoms in the molecule.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">aliphatic_carbons</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1525,16 +1525,21 @@
 
 <div class="viewcode-block" id="select_carbons_from_different_rings"><a class="viewcode-back" href="../../api/utils.html#coal.utils.select_carbons_from_different_rings">[docs]</a><span class="k">def</span> <span class="nf">select_carbons_from_different_rings</span><span class="p">(</span><span class="n">current_molecule</span><span class="p">,</span> <span class="n">ring_carbons</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Selects up to n carbon atoms from different rings within the given molecule.</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters:</span>
-<span class="sd">    - current_molecule (str): SMILES representation of the molecule.</span>
-<span class="sd">    - ring_carbons (list): A list of indices of carbon atoms within rings.</span>
-<span class="sd">    - n (int): The number of carbon atoms to select, each from a different ring.</span>
-<span class="sd">    </span>
-<span class="sd">    Returns:</span>
+<span class="sd">    Select up to `n` carbon atoms from different rings within the given molecule.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    current_molecule : str</span>
+<span class="sd">        SMILES representation of the molecule.</span>
+<span class="sd">    ring_carbons : list</span>
+<span class="sd">        A list of indices of carbon atoms within rings.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The number of carbon atoms to select, each from a different ring.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
 <span class="sd">    selected_indices : list</span>
-<span class="sd">                       A list of selected carbon atom indices, each from different rings.</span>
+<span class="sd">        A list of selected carbon atom indices, each from different rings.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mol</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">current_molecule</span><span class="p">)</span>
     <span class="n">ring_info</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span>
@@ -1561,12 +1566,16 @@
 <span class="sd">    Counts the number of each specified element in a single SMILES string or a list of SMILES strings.</span>
 <span class="sd">    Ensures all expected elements are included in the result dictionary, even if their count is 0.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    - smiles_input (str or list): A single SMILES string or a list of SMILES strings representing molecule(s).</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    smiles_input : str or list</span>
+<span class="sd">        A single SMILES string or a list of SMILES strings representing molecule(s).</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">    - dict: A dictionary with element symbols as keys and their total counts across all input molecules as values.</span>
-<span class="sd">            Includes &#39;C&#39;, &#39;H&#39;, &#39;O&#39;, &#39;N&#39;, and &#39;S&#39;.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        A dictionary with element symbols as keys and their total counts across all input molecules as values.</span>
+<span class="sd">        Includes &#39;C&#39;, &#39;H&#39;, &#39;O&#39;, &#39;N&#39;, and &#39;S&#39;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">atom_counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>  <span class="c1"># Predefine expected elements with counts of 0</span>
 
@@ -1596,14 +1605,14 @@
 <span class="sd">    Modifies a molecule by replacing carbon atoms with nitrogen to meet target element counts,</span>
 <span class="sd">    while avoiding changes in benzene rings.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    smiles : str</span>
 <span class="sd">        SMILES representation of the molecule.</span>
 <span class="sd">    target_element_counts : dict</span>
 <span class="sd">        Dictionary with target counts for elements, e.g., {&#39;C&#39;: x, &#39;N&#39;: y}.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    new_smiles : str</span>
 <span class="sd">        A new SMILES string of the modified molecule, or the original SMILES if the desired modifications cannot be made.</span>
@@ -1642,14 +1651,14 @@
 <span class="sd">    Returns the indices of specified atoms in a molecule. For oxygen atoms,</span>
 <span class="sd">    it specifically returns those bonded to exactly two carbon atoms.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    smiles : str</span>
 <span class="sd">        SMILES representation of the molecule.</span>
 <span class="sd">    atom_symbol : str</span>
 <span class="sd">        The symbol of the atom to find (&#39;O&#39; for oxygen, &#39;S&#39; for sulfur).</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list</span>
 <span class="sd">        A list of indices for the specified atoms under the given conditions.</span>
@@ -1676,14 +1685,14 @@
 <span class="sd">    Modifies a molecule by replacing sulfur atoms with oxygen, or vice versa,</span>
 <span class="sd">    to meet target element counts for oxygen and sulfur.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    smiles : str</span>
 <span class="sd">        SMILES representation of the molecule.</span>
 <span class="sd">    target_element_counts : dict</span>
 <span class="sd">        Dictionary with target counts for oxygen (&#39;O&#39;) and sulfur (&#39;S&#39;).</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    str</span>
 <span class="sd">        A new SMILES string of the modified molecule.</span>
@@ -1753,7 +1762,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Prints the counts of specified elements (C, N, H, S, O) in a single SMILES string or a list of SMILES strings.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    - smiles_input: A single SMILES string or a list of SMILES strings representing molecule(s).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">property_counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C_N_ar&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;C_al&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;O_S&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
@@ -1795,7 +1804,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Draws a grid image of molecules from a list of SMILES strings.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    - smiles_list: List of SMILES strings representing the molecules to be drawn.</span>
 <span class="sd">    - molsPerRow: Number of molecules to display per row in the grid image.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1816,10 +1825,10 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the mass percentages of elements based on their counts in a molecule.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    - atom_counts (dict): A dictionary with element symbols as keys and their counts as values.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    - dict: A dictionary with element symbols as keys and their mass percentages as values.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># 原子质量参考，单位为原子质量单位 (amu)</span>

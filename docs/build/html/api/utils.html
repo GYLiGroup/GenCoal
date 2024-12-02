@@ -163,22 +163,20 @@
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">balance_c_and_n_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_element_counts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#balance_c_and_n_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.balance_c_and_n_atoms" title="Permalink to this definition"></a></dt>
 <dd><p>Modifies a molecule by replacing carbon atoms with nitrogen to meet target element counts,
 while avoiding changes in benzene rings.</p>
-<section id="parameters">
-<h2>Parameters:<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>smiles<span class="classifier">str</span></dt><dd><p>SMILES representation of the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>smiles</strong> (<em>str</em>) – SMILES representation of the molecule.</p></li>
+<li><p><strong>target_element_counts</strong> (<em>dict</em>) – Dictionary with target counts for elements, e.g., {‘C’: x, ‘N’: y}.</p></li>
+</ul>
 </dd>
-<dt>target_element_counts<span class="classifier">dict</span></dt><dd><p>Dictionary with target counts for elements, e.g., {‘C’: x, ‘N’: y}.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>new_smiles</strong> – A new SMILES string of the modified molecule, or the original SMILES if the desired modifications cannot be made.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
-</section>
-<section id="returns">
-<h2>Returns:<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>new_smiles<span class="classifier">str</span></dt><dd><p>A new SMILES string of the modified molecule, or the original SMILES if the desired modifications cannot be made.</p>
-</dd>
-</dl>
-</section>
 </dd></dl>
 
 <dl class="py function">
@@ -186,22 +184,20 @@ while avoiding changes in benzene rings.</p>
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">balance_o_and_s_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_element_counts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#balance_o_and_s_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.balance_o_and_s_atoms" title="Permalink to this definition"></a></dt>
 <dd><p>Modifies a molecule by replacing sulfur atoms with oxygen, or vice versa,
 to meet target element counts for oxygen and sulfur.</p>
-<section id="id1">
-<h2>Parameters:<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>smiles<span class="classifier">str</span></dt><dd><p>SMILES representation of the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>smiles</strong> (<em>str</em>) – SMILES representation of the molecule.</p></li>
+<li><p><strong>target_element_counts</strong> (<em>dict</em>) – Dictionary with target counts for oxygen (‘O’) and sulfur (‘S’).</p></li>
+</ul>
 </dd>
-<dt>target_element_counts<span class="classifier">dict</span></dt><dd><p>Dictionary with target counts for oxygen (‘O’) and sulfur (‘S’).</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new SMILES string of the modified molecule.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
-</section>
-<section id="id2">
-<h2>Returns:<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>str</dt><dd><p>A new SMILES string of the modified molecule.</p>
-</dd>
-</dl>
-</section>
 </dd></dl>
 
 <dl class="py function">
@@ -265,9 +261,9 @@ to meet target element counts for oxygen and sulfur.</p>
 <dt class="sig sig-object py" id="coal.utils.calculate_mass_percentages">
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">calculate_mass_percentages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom_counts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#calculate_mass_percentages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.calculate_mass_percentages" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates the mass percentages of elements based on their counts in a molecule.</p>
-<p>Parameters:
+<p>Parameters
 - atom_counts (dict): A dictionary with element symbols as keys and their counts as values.</p>
-<p>Returns:
+<p>Returns
 - dict: A dictionary with element symbols as keys and their mass percentages as values.</p>
 </dd></dl>
 
@@ -285,20 +281,17 @@ to meet target element counts for oxygen and sulfur.</p>
 <dt class="sig sig-object py" id="coal.utils.connect_rings">
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">connect_rings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecules_tuple_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#connect_rings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.connect_rings" title="Permalink to this definition"></a></dt>
 <dd><p>Connects two rings from a list of molecule tuples by adding two methane groups between them.</p>
-<section id="id3">
-<h2>Parameters:<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>molecules_tuple_list<span class="classifier">list of tuples</span></dt><dd><p>A list where each tuple contains a SMILES string of a molecule and a list of carbon atom indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>molecules_tuple_list</strong> (<em>list</em><em> of </em><em>tuples</em>) – A list where each tuple contains a SMILES string of a molecule and a list of carbon atom indices.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new SMILES string that represents the connected molecule structure.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SMILES</p>
 </dd>
 </dl>
-</section>
-<section id="id4">
-<h2>Returns:<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>SMILES</dt><dd><p>A new SMILES string that represents the connected molecule structure.</p>
-</dd>
-</dl>
-</section>
 </dd></dl>
 
 <dl class="py function">
@@ -342,13 +335,18 @@ If no suitable carbon atoms are found for the connection, returns None.</p>
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">count_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles_input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#count_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.count_atoms" title="Permalink to this definition"></a></dt>
 <dd><p>Counts the number of each specified element in a single SMILES string or a list of SMILES strings.
 Ensures all expected elements are included in the result dictionary, even if their count is 0.</p>
-<p>Parameters:
-- smiles_input (str or list): A single SMILES string or a list of SMILES strings representing molecule(s).</p>
-<p>Returns:
-- dict: A dictionary with element symbols as keys and their total counts across all input molecules as values.</p>
-<blockquote>
-<div><p>Includes ‘C’, ‘H’, ‘O’, ‘N’, and ‘S’.</p>
-</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>smiles_input</strong> (<em>str</em><em> or </em><em>list</em>) – A single SMILES string or a list of SMILES strings representing molecule(s).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary with element symbols as keys and their total counts across all input molecules as values.
+Includes ‘C’, ‘H’, ‘O’, ‘N’, and ‘S’.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -391,7 +389,7 @@ indicative of alcohol, phenol, or thiol groups.</p>
 <dt class="sig sig-object py" id="coal.utils.count_property">
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">count_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles_input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#count_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.count_property" title="Permalink to this definition"></a></dt>
 <dd><p>Prints the counts of specified elements (C, N, H, S, O) in a single SMILES string or a list of SMILES strings.</p>
-<p>Parameters:
+<p>Parameters
 - smiles_input: A single SMILES string or a list of SMILES strings representing molecule(s).</p>
 </dd></dl>
 
@@ -409,7 +407,7 @@ indicative of alcohol, phenol, or thiol groups.</p>
 <dt class="sig sig-object py" id="coal.utils.drawMolecules">
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">drawMolecules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molsPerRow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxMols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#drawMolecules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.drawMolecules" title="Permalink to this definition"></a></dt>
 <dd><p>Draws a grid image of molecules from a list of SMILES strings.</p>
-<p>Parameters:
+<p>Parameters
 - smiles_list: List of SMILES strings representing the molecules to be drawn.
 - molsPerRow: Number of molecules to display per row in the grid image.</p>
 </dd></dl>
@@ -452,15 +450,16 @@ Atom indices are zero-based, matching the order in which atoms appear in the RDK
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.utils.find_aliphatic_carbons">
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">find_aliphatic_carbons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#find_aliphatic_carbons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.find_aliphatic_carbons" title="Permalink to this definition"></a></dt>
-<dd><blockquote>
-<div><p>Identifies indices of aliphatic (non-aromatic) carbon atoms within a given molecule.</p>
-<dl class="simple">
-<dt>mol<span class="classifier">RDKit Mol</span></dt><dd><p>An RDKit molecule object to be analyzed.</p>
+<dd><p>Identifies indices of aliphatic (non-aromatic) carbon atoms within a given molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>RDKit Mol</em>) – An RDKit molecule object to be analyzed.</p>
 </dd>
-</dl>
-</div></blockquote>
-<dl class="simple">
-<dt>aliphatic_carbons<span class="classifier">list</span></dt><dd><p>A list of indices corresponding to aliphatic carbon atoms in the molecule.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>aliphatic_carbons</strong> – A list of indices corresponding to aliphatic carbon atoms in the molecule.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -487,22 +486,20 @@ Atom indices are zero-based, matching the order in which atoms appear in the RDK
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">find_atom_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom_symbol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#find_atom_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.find_atom_indices" title="Permalink to this definition"></a></dt>
 <dd><p>Returns the indices of specified atoms in a molecule. For oxygen atoms,
 it specifically returns those bonded to exactly two carbon atoms.</p>
-<section id="id5">
-<h2>Parameters:<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>smiles<span class="classifier">str</span></dt><dd><p>SMILES representation of the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>smiles</strong> (<em>str</em>) – SMILES representation of the molecule.</p></li>
+<li><p><strong>atom_symbol</strong> (<em>str</em>) – The symbol of the atom to find (‘O’ for oxygen, ‘S’ for sulfur).</p></li>
+</ul>
 </dd>
-<dt>atom_symbol<span class="classifier">str</span></dt><dd><p>The symbol of the atom to find (‘O’ for oxygen, ‘S’ for sulfur).</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of indices for the specified atoms under the given conditions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
-</section>
-<section id="id6">
-<h2>Returns:<a class="headerlink" href="#id6" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>list</dt><dd><p>A list of indices for the specified atoms under the given conditions.</p>
-</dd>
-</dl>
-</section>
 </dd></dl>
 
 <dl class="py function">
@@ -833,16 +830,22 @@ returns the most recent successful modification or the original molecule if none
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.utils.select_carbons_from_different_rings">
 <span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">select_carbons_from_different_rings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ring_carbons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coal/utils.html#select_carbons_from_different_rings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coal.utils.select_carbons_from_different_rings" title="Permalink to this definition"></a></dt>
-<dd><p>Selects up to n carbon atoms from different rings within the given molecule.</p>
-<p>Parameters:
-- current_molecule (str): SMILES representation of the molecule.
-- ring_carbons (list): A list of indices of carbon atoms within rings.
-- n (int): The number of carbon atoms to select, each from a different ring.</p>
-<p>Returns:
-selected_indices : list</p>
-<blockquote>
-<div><p>A list of selected carbon atom indices, each from different rings.</p>
-</div></blockquote>
+<dd><p>Select up to <cite>n</cite> carbon atoms from different rings within the given molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_molecule</strong> (<em>str</em>) – SMILES representation of the molecule.</p></li>
+<li><p><strong>ring_carbons</strong> (<em>list</em>) – A list of indices of carbon atoms within rings.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – The number of carbon atoms to select, each from a different ring.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>selected_indices</strong> – A list of selected carbon atom indices, each from different rings.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

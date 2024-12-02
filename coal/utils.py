@@ -19,6 +19,9 @@ from scipy.interpolate import interp1d
 from scipy.integrate import simps
 import matplotlib.pyplot as plt
 
+from joblib import Parallel, delayed
+import copy
+
 # NMR integral ------------ create json
 def calculate_C90_C180(file_path):
     # 导入数据
@@ -186,11 +189,34 @@ def getPackage(total_smiles_list):
 
     return sorted_smiles_list
 
+def recommended_carbonyl_hydroxyl(C_moles, ele_ratio):
+    # Initial calculations
+    atom_num = calculate_element_moles(C_moles, ele_ratio)
+    """
+    Calculate the number of carbonyl and hydroxyl groups based on atom counts and compound type.
 
+    Parameters
+    ----------
+    atom_num : dict
+               Atom counts for 'C', 'H', 'O', 'N', 'S'.
 
-def getTarget(C90, C180, ele_ratio, C_moles, type):
-    '''
-    Adjusts the target atom counts for a chemical compound based on specified carbon moles, elemental mass ratios, a carbon atom rate, coal type, and the percentages of carboxyl and hydroxyl groups.
+    Returns
+    -------
+    carbonyl : int
+               Number of carbonyl groups.
+    hydroxyl : int
+               Number of hydroxyl groups.
+    """
+    total_mass = atom_num['C'] * 12 + atom_num['H'] * 1 + atom_num['O'] * 16 + atom_num['N'] * 14 + atom_num['S'] * 32
+
+    carbonyl = round((0.01 * total_mass) / 16)
+    hydroxyl = round((0.02 * total_mass) / 16)
+    return carbonyl, hydroxyl
+
+def getTarget(C90, ele_ratio, C_moles, carbonyl, hydroxyl):
+    """
+    Adjusts the target atom counts for a chemical compound based on specified carbon moles,
+    elemental mass ratios, a carbon atom rate, coal type, and the percentages of carboxyl and hydroxyl groups.
 
     Parameters
     ----------
@@ -200,51 +226,35 @@ def getTarget(C90, C180, ele_ratio, C_moles, type):
                 Element symbols ('C', 'H', 'O', 'N', 'S') as keys and their mass percentages as values.
     C_moles : float
               Number of C atom.
-    type : str
-           Type of coal, such as 'lignite'.
+    compound_type : str
+                    Type of coal, such as 'lignite'.
+    carbonyl : int
+               Number of carbonyl groups.
+    hydroxyl : int
+               Number of hydroxyl groups.
+
     Returns
     -------
     atom_num : dict
-               Calculate chemical fomula.
+               Calculate chemical formula.
     adjusted_target : dict
-                      Target number of atoms
-    '''
+                      Target number of atoms.
+    """
     # Initial calculations
     atom_num = calculate_element_moles(C_moles, ele_ratio)
 
-    # Check if the sum of carbonyl and hydroxyl exceeds the total number of oxygen atoms
-    # if carbonyl + hydroxyl >= atom_num['O']:
-    #     carbonyl = atom_num['O'] - hydroxyl
-    #     hydroxyl = 0
+    # Adjust targets based on carbonyl and hydroxyl values
+    adjusted_target = {
+        'C_N_ar': round(atom_num['C'] * C90 + atom_num['N']),
+        'C_al': round(atom_num['C'] * (1 - C90)),
+        'O_S': round(atom_num['O'] + atom_num['S'] - carbonyl - hydroxyl),
+        'H': atom_num['H']
+    }
 
+    print(f"Model has {carbonyl} O atom in carbonyl")
+    print(f"Model has {hydroxyl} O atom in hydroxyl")
     
-
-    if type == 'bitumite':
-        carbonyl =  0
-        hydroxyl = 0
-        # Adjust for lignite specifics
-        adjusted_target = {
-            'C_N_ar': round(atom_num['C'] * C90 + atom_num['N']),
-            'C_al': round(atom_num['C'] * (1 - C90)),
-            'O_S': round(atom_num['O'] + atom_num['S']- carbonyl - hydroxyl),
-            'H': atom_num['H']
-        }
-        print(f"Model has {carbonyl} O atom in carbonyl")
-        print(f"Model has {hydroxyl} O atom in hydroxyl")
-
-    elif type == 'lignite':
-        carbonyl = round((0.01 * (atom_num['C'] * 12 + atom_num['H'] * 1 + atom_num['O'] * 16 + atom_num['N'] * 14 + atom_num['S'] * 32)) / 16)
-        hydroxyl = round((0.02 * (atom_num['C'] * 12 + atom_num['H'] * 1 + atom_num['O'] * 16 + atom_num['N'] * 14 + atom_num['S'] * 32)) / 16)
-        adjusted_target = {
-            'C_N_ar': round(atom_num['C'] * C90 + atom_num['N']),
-            'C_al': round(atom_num['C'] * (1 - C90)),
-            'O_S': round(atom_num['O'] + atom_num['S']- carbonyl - hydroxyl),
-            'H': atom_num['H']
-        }
-        print(f"Model has {carbonyl} O atom in carbonyl")
-        print(f"Model has {hydroxyl} O atom in hydroxyl")
     return atom_num, adjusted_target
-
     
 
 def build_H_nested_dict(sorted_choices):
@@ -348,46 +358,6 @@ def find_combinations(sorted_choices, target_C_N_ar):
     return cn_list
 
 def backtrack_combinations(nested_dict_H, selection_dic, target_O_S, max_depth=30):
-    H_keys = sorted(nested_dict_H.keys(), reverse=True)
-    solutions = []
-    memo = {}
-
-    def convert_to_hashable(current_selection):
-        return tuple((k, tuple(v.items())) for k, v in current_selection.items())
-
-    def backtrack(remaining_O_S, H_index, current_selection, depth):
-        if depth > max_depth:  # 检查是否超过了最大深度
-            return
-        
-        hashable_key = (remaining_O_S, H_index, convert_to_hashable(current_selection))
-        if hashable_key in memo:
-            return
-
-        if remaining_O_S == 0 and all(sum(current_selection[H].values()) == selection_dic[H] for H in H_keys):
-            solutions.append(copy.deepcopy(current_selection))
-            return
-        
-        if H_index >= len(H_keys) or remaining_O_S < 0:
-            return
-        
-        current_H = H_keys[H_index]
-        backtrack(remaining_O_S, H_index + 1, current_selection, depth + 1)  # Increase depth
-
-        for O_S, count in nested_dict_H[current_H].items():
-            if sum(current_selection[current_H].values()) < selection_dic[current_H]:
-                current_selection[current_H][O_S] += 1
-                backtrack(remaining_O_S - O_S, H_index, current_selection, depth + 1)  # Increase depth
-                current_selection[current_H][O_S] -= 1
-
-        memo[hashable_key] = True
-                    
-    initial_selection = {key: {subkey: 0 for subkey in nested_dict_H[key]} for key in nested_dict_H.keys()}
-    backtrack(target_O_S, 0, initial_selection, 0)  # Start with depth 0
-
-    return solutions
-
-
-def backtrack_combinations(nested_dict_H, selection_dic, target_O_S, max_depth=30):
     """
     Finds combinations within a nested dictionary that match a specified target for oxygen and sulfur count (O_S) using backtracking.
 
@@ -458,6 +428,115 @@ def backtrack_combinations(nested_dict_H, selection_dic, target_O_S, max_depth=3
     backtrack(target_O_S, 0, initial_selection, 0)  # Start backtracking with initial conditions
 
     return solutions
+
+
+def parallel_backtrack_combinations(nested_dict_H, selection_dic, target_O_S, max_depth=50, n_jobs=40):
+    """
+    Parallelized version of backtracking to find combinations that match target_O_S.
+
+    Parameters
+    ----------
+    nested_dict_H : dict
+        A nested dictionary where the first level keys are H (hydrogen) counts.
+    selection_dic : dict
+        A dictionary specifying total counts for each H key in the solution.
+    target_O_S : int
+        The target sum of O_S values to match.
+    n_jobs : int, optional
+        Number of parallel jobs (cores) to use.
+
+    Returns
+    -------
+    list
+        A list of dictionaries, each representing a valid combination.
+    """
+    # Sort H keys in descending order for optimization
+    H_keys = sorted(nested_dict_H.keys(), reverse=True)
+
+    def convert_to_hashable(current_selection):
+        """
+        Converts the current selection dictionary into a hashable type (tuple) for memoization.
+        """
+        return tuple((k, tuple(v.items())) for k, v in current_selection.items())
+
+    def backtrack(remaining_O_S, H_index, current_selection, depth, memo):
+        """
+        Recursive backtracking function to explore combinations.
+        """
+        # Base case: Stop if maximum depth is exceeded
+        if depth > max_depth:  # Max depth hardcoded here
+            return []
+
+        # Check memo to avoid re-exploring known paths
+        hashable_key = (remaining_O_S, H_index, convert_to_hashable(current_selection))
+        if hashable_key in memo:
+            return []
+
+        # Successful case
+        if remaining_O_S == 0 and all(
+            sum(current_selection[H].values()) == selection_dic[H] for H in H_keys
+        ):
+            return [copy.deepcopy(current_selection)]
+
+        # Base case: Stop if index out of bounds or negative target
+        if H_index >= len(H_keys) or remaining_O_S < 0:
+            return []
+
+        current_H = H_keys[H_index]
+        solutions = []
+
+        # Explore next H value without adding current H
+        solutions.extend(backtrack(remaining_O_S, H_index + 1, current_selection, depth + 1, memo))
+
+        # Try adding current H and explore further
+        for O_S, count in nested_dict_H[current_H].items():
+            if sum(current_selection[current_H].values()) < selection_dic[current_H]:
+                current_selection[current_H][O_S] += 1
+                solutions.extend(
+                    backtrack(remaining_O_S - O_S, H_index, current_selection, depth + 1, memo)
+                )
+                current_selection[current_H][O_S] -= 1
+
+        memo[hashable_key] = True
+        return solutions
+
+    def generate_subtasks(nested_dict_H):
+        """
+        Generate finer-grained subtasks for parallelization.
+        """
+        subtasks = []
+        for H_key, sub_dict in nested_dict_H.items():
+            for O_S_key in sub_dict.keys():
+                subtasks.append((H_key, O_S_key))
+        return subtasks
+
+    def backtrack_for_subtask(H_key, O_S_key):
+        """
+        Perform backtracking for a specific H and O_S combination.
+        """
+        memo = {}
+        initial_selection = {
+            key: {subkey: 0 for subkey in nested_dict_H[key]} for key in nested_dict_H
+        }
+        initial_selection[H_key][O_S_key] += 1  # Initialize with one choice
+        remaining_O_S = target_O_S - O_S_key
+        return backtrack(remaining_O_S, H_keys.index(H_key), initial_selection, 0, memo)
+
+    # Generate finer-grained subtasks
+    subtasks = generate_subtasks(nested_dict_H)
+
+    # Parallel execution
+    results = Parallel(n_jobs=n_jobs)(
+        delayed(backtrack_for_subtask)(H_key, O_S_key) for H_key, O_S_key in subtasks
+    )
+
+    # Combine results
+    combined_solutions = []
+    for result in results:
+        combined_solutions.extend(result)
+
+    return combined_solutions
+
 
 def find_matching_indices(selection, sorted_choices):
     """
@@ -848,14 +927,14 @@ def _connect_ring_C(mol1, mol2, chosen_pair1, chosen_pair2):
     """
     Connects two molecules using two methane molecules to simulate the addition of methyl groups at specified carbon atoms.
 
-    Parameters:
+    Parameters
     ----------
     mol1, mol2 : RDKit Mol
         The molecule objects to be connected.
     chosen_pair1, chosen_pair2 : tuple
         Pairs of carbon atom indices in mol1 and mol2, respectively, where the methane molecules will be connected.
 
-    Returns:
+    Returns
     -------
     RDKit Mol
         A new RDKit Mol object that represents the connected molecule structure.
@@ -889,14 +968,14 @@ def _find_index_pairs(carbons, mol):
     """
     Finds index pairs of carbon atoms within a molecule for connection.
 
-    Parameters:
+    Parameters
     ----------
     carbons : list of int
         A list containing indices of carbon atoms within the molecule that are suitable for connection.
     mol : RDKit Mol object
         The molecule in which the carbon atoms are located.
 
-    Returns:
+    Returns
     -------
     list of tuples
         A list where each tuple contains two indices representing a pair of carbon atoms.
@@ -916,12 +995,12 @@ def connect_rings(molecules_tuple_list):
     """
     Connects two rings from a list of molecule tuples by adding two methane groups between them.
 
-    Parameters:
+    Parameters
     ----------
     molecules_tuple_list : list of tuples
         A list where each tuple contains a SMILES string of a molecule and a list of carbon atom indices.
 
-    Returns:
+    Returns
     -------
     SMILES
         A new SMILES string that represents the connected molecule structure.
@@ -1299,7 +1378,7 @@ def find_aliphatic_carbons(mol):
 
     Returns
     -------
-   aliphatic_carbons : list
+    aliphatic_carbons : list
         A list of indices corresponding to aliphatic carbon atoms in the molecule.
     """
     aliphatic_carbons = []
@@ -1445,16 +1524,21 @@ def show_ring_carbon_numbers(smiles):
 
 def select_carbons_from_different_rings(current_molecule, ring_carbons, n):
     """
-    Selects up to n carbon atoms from different rings within the given molecule.
-    
-    Parameters:
-    - current_molecule (str): SMILES representation of the molecule.
-    - ring_carbons (list): A list of indices of carbon atoms within rings.
-    - n (int): The number of carbon atoms to select, each from a different ring.
-    
-    Returns:
+    Select up to `n` carbon atoms from different rings within the given molecule.
+
+    Parameters
+    ----------
+    current_molecule : str
+        SMILES representation of the molecule.
+    ring_carbons : list
+        A list of indices of carbon atoms within rings.
+    n : int
+        The number of carbon atoms to select, each from a different ring.
+
+    Returns
+    -------
     selected_indices : list
-                       A list of selected carbon atom indices, each from different rings.
+        A list of selected carbon atom indices, each from different rings.
     """
     mol = Chem.MolFromSmiles(current_molecule)
     ring_info = mol.GetRingInfo()
@@ -1481,12 +1565,16 @@ def count_atoms(smiles_input):
     Counts the number of each specified element in a single SMILES string or a list of SMILES strings.
     Ensures all expected elements are included in the result dictionary, even if their count is 0.
 
-    Parameters:
-    - smiles_input (str or list): A single SMILES string or a list of SMILES strings representing molecule(s).
+    Parameters
+    ----------
+    smiles_input : str or list
+        A single SMILES string or a list of SMILES strings representing molecule(s).
 
-    Returns:
-    - dict: A dictionary with element symbols as keys and their total counts across all input molecules as values.
-            Includes 'C', 'H', 'O', 'N', and 'S'.
+    Returns
+    -------
+    dict
+        A dictionary with element symbols as keys and their total counts across all input molecules as values.
+        Includes 'C', 'H', 'O', 'N', and 'S'.
     """
     atom_counts = {'C': 0, 'H': 0, 'O': 0, 'N': 0, 'S': 0}  # Predefine expected elements with counts of 0
 
@@ -1516,14 +1604,14 @@ def balance_c_and_n_atoms(smiles, target_element_counts):
     Modifies a molecule by replacing carbon atoms with nitrogen to meet target element counts,
     while avoiding changes in benzene rings.
 
-    Parameters:
+    Parameters
     ----------
     smiles : str
         SMILES representation of the molecule.
     target_element_counts : dict
         Dictionary with target counts for elements, e.g., {'C': x, 'N': y}.
 
-    Returns:
+    Returns
     -------
     new_smiles : str
         A new SMILES string of the modified molecule, or the original SMILES if the desired modifications cannot be made.
@@ -1562,14 +1650,14 @@ def find_atom_indices(smiles, atom_symbol):
     Returns the indices of specified atoms in a molecule. For oxygen atoms,
     it specifically returns those bonded to exactly two carbon atoms.
 
-    Parameters:
+    Parameters
     ----------
     smiles : str
         SMILES representation of the molecule.
     atom_symbol : str
         The symbol of the atom to find ('O' for oxygen, 'S' for sulfur).
 
-    Returns:
+    Returns
     -------
     list
         A list of indices for the specified atoms under the given conditions.
@@ -1596,14 +1684,14 @@ def balance_o_and_s_atoms(smiles, target_element_counts):
     Modifies a molecule by replacing sulfur atoms with oxygen, or vice versa,
     to meet target element counts for oxygen and sulfur.
 
-    Parameters:
+    Parameters
     ----------
     smiles : str
         SMILES representation of the molecule.
     target_element_counts : dict
         Dictionary with target counts for oxygen ('O') and sulfur ('S').
 
-    Returns:
+    Returns
     -------
     str
         A new SMILES string of the modified molecule.
@@ -1673,7 +1761,7 @@ def count_property(smiles_input):
     """
     Prints the counts of specified elements (C, N, H, S, O) in a single SMILES string or a list of SMILES strings.
 
-    Parameters:
+    Parameters
     - smiles_input: A single SMILES string or a list of SMILES strings representing molecule(s).
     """
     property_counts = {'C_N_ar': 0, 'C_al': 0, 'O_S': 0, 'H': 0}
@@ -1715,7 +1803,7 @@ def drawMolecules(smiles_list, molsPerRow, maxMols=100):
     """
     Draws a grid image of molecules from a list of SMILES strings.
 
-    Parameters:
+    Parameters
     - smiles_list: List of SMILES strings representing the molecules to be drawn.
     - molsPerRow: Number of molecules to display per row in the grid image.
     """
@@ -1736,10 +1824,10 @@ def calculate_mass_percentages(atom_counts):
     """
     Calculates the mass percentages of elements based on their counts in a molecule.
 
-    Parameters:
+    Parameters
     - atom_counts (dict): A dictionary with element symbols as keys and their counts as values.
 
-    Returns:
+    Returns
     - dict: A dictionary with element symbols as keys and their mass percentages as values.
     """
     # 原子质量参考，单位为原子质量单位 (amu)
