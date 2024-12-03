@@ -13,6 +13,4 @@ sphinx:
   configuration: docs/source/conf.py
 
 formats:
-  - htmlzip
-  - pdf
-  - epub
+  - htmlzip  # 只保留 HTML 格式
