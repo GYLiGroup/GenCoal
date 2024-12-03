@@ -1,8 +1,3 @@
-.. GenCoal documentation master file, created by
-   sphinx-quickstart on Sun Oct 27 22:44:16 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to GenCoal's documentation!
 ===================================
 
@@ -15,7 +10,7 @@ Welcome to GenCoal's documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: API Reference
+   :caption: API
 
    api/ClipIRMol
    api/CoalGenerator
