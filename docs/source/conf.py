@@ -16,12 +16,23 @@ release = 'v1.0.0'
 
 import os
 import sys
-# os.path.dirname(__file__) 是当前 conf.py 文件的路径。
-# '../..' 表示向上两级到项目的根目录。
-project_path = os.path.join(os.path.dirname(__file__), '../..')
-print("Project path:", project_path)
-sys.path.insert(0, project_path)
-print("Current sys.path:", sys.path)  # 确认路径打印是否正确
+
+# 获取当前 conf.py 文件所在的目录
+conf_dir = os.path.dirname(__file__)
+
+# 计算项目根路径（绝对路径）
+project_root = os.path.abspath(os.path.join(conf_dir, "../.."))
+print("Project root:", project_root)
+
+# 将项目根路径添加到 sys.path 中
+sys.path.insert(0, project_root)
+
+# 拼接 coal 文件夹的路径
+coal_path = os.path.join(project_root, 'coal')
+sys.path.insert(0, coal_path)
+
+# 打印 sys.path 确认路径添加是否成功
+print("Current sys.path:", sys.path)
 
 extensions = [
     'sphinx.ext.autodoc',       # Auto-generates docs from docstrings

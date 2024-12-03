@@ -1,16 +1,20 @@
+# .readthedocs.yaml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+# Required
 version: 2
 
-build:
-  os: ubuntu-22.04
-  tools:
-    python: "3.8"
-
-python:
-  install:
-    - requirements: requirements.txt  # 设置 requirements.txt 文件路径
-
+# Build documentation in the docs/ directory with Sphinx
 sphinx:
-  configuration: docs/source/conf.py
+   configuration: docs/source/conf.py
 
-formats:
-  - htmlzip  # 只保留 HTML 格式
+# Optionally build your docs in additional formats such as PDF
+# Default
+formats: []
+
+# Optionally set the version of Python and requirements required to build your docs
+python:
+   version: "3.8"
+   install:
+   - requirements: docs/requirements.txt
