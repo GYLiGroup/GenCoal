@@ -1,9 +1,7 @@
+from typing import Tuple, Dict, List
 from rdkit import Chem
 from rdkit.Chem.rdchem import BondType
-from rdkit.Chem import AddHs
-from rdkit.Chem import rdchem
-from rdkit.Chem import Draw
-from rdkit.Chem import Draw, AllChem
+from rdkit.Chem import AddHs, Draw, AllChem
 from IPython.display import display
 
 from collections import defaultdict
@@ -20,86 +18,101 @@ from scipy.integrate import simps
 import matplotlib.pyplot as plt
 
 from joblib import Parallel, delayed
-import copy
 
 # NMR integral ------------ create json
-def calculate_C90_C180(file_path):
+def calculate_C90_C180(file_path: str) -> Tuple[float, float]:
+    """Calculate the integral ratios C90 and C180 from NMR data.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the CSV file containing NMR data with columns 'X' and 'Y'.
+
+    Returns
+    -------
+    Tuple[float, float]
+        Ratios C90 and C180.
+    """
     # 导入数据
     df = pd.read_csv(file_path)
+    
     # 数据清洗
     filtered_df = df[(df['X'] >= 0) & (df['X'] <= 250) & (df['Y'] >= 0)]
+    x = filtered_df['X'].values
+    y = filtered_df['Y'].values
     
-    # 取出该列的所有数据
-    x_list = filtered_df['X'].values
-    y_list = filtered_df['Y'].values
-    
-    x = np.array(x_list)
-    y = np.array(y_list)
-    
-    # 创建一个线性插值函数
+    # 创建线性插值函数
     f = interp1d(x, y, kind='linear')
-    
-    # 计算x的最小值和最大值
-    min_x = np.min(x)
-    max_x = np.max(x)
+    x_values = np.linspace(x.min(), x.max(), 1000)
+    y_values = f(x_values)
 
     # 使用Simpson积分法计算总面积
-    x_values = np.linspace(min_x, max_x, 1000)
-    y_values = f(x_values)
     total_area = simps(y_values, x_values)
-    
+
     # 计算90到最大x值的面积比
-    x_90_max_values = x_values[x_values >= 90]
-    y_90_max_values = f(x_90_max_values)
-    area_90_max = simps(y_90_max_values, x_90_max_values)
+    x_90_max = x_values[x_values >= 90]
+    y_90_max = f(x_90_max)
+    area_90_max = simps(y_90_max, x_90_max)
     C90 = round(area_90_max / total_area, 3)
-    
+
     # 计算180到最大x值的面积比
-    x_180_max_values = x_values[x_values >= 180]
-    y_180_max_values = f(x_180_max_values)
-    area_180_max = simps(y_180_max_values, x_180_max_values)
+    x_180_max = x_values[x_values >= 180]
+    y_180_max = f(x_180_max)
+    area_180_max = simps(y_180_max, x_180_max)
     C180 = round(area_180_max / total_area, 3)
-    
+
     # 绘图
     plt.figure(figsize=(16, 8))
     plt.plot(x_values, y_values, label='Interpolated Curve', color='blue')
-    plt.fill_between(x_90_max_values, y_90_max_values, color='red', alpha=0.5, label='Area from 90 to Max')
-    plt.fill_between(x_180_max_values, y_180_max_values, color='blue', alpha=0.5, label='Area from 180 to Max')
-    plt.xlabel('Chemical shift ppm', fontsize=14)
+    plt.fill_between(x_90_max, y_90_max, color='red', alpha=0.5, label='Area from 90 to Max')
+    plt.fill_between(x_180_max, y_180_max, color='blue', alpha=0.5, label='Area from 180 to Max')
+    plt.xlabel('Chemical Shift (ppm)', fontsize=14)
+    plt.ylabel('Intensity', fontsize=14)
     plt.legend(fontsize=12)
     plt.grid(True)
     plt.xticks(fontsize=12)
     plt.yticks(fontsize=12)
-    
-    # 设置字体为Palatino
     plt.rc('font', family='Palatino')
-    
     plt.show()
-    
+
     return C90, C180
 
-# read json
-def read_json(file_name):
+# Read JSON data
+def read_json(file_name: str) -> dict:
+    """Reads a JSON file and returns its content.
+
+    Parameters
+    ----------
+    file_name : str
+        Path to the JSON file.
+
+    Returns
+    -------
+    dict
+        The content of the JSON file.
+    """
     with open(file_name, 'r') as file:
         data = json.load(file)
     return data
 
-# Generate substructures using DFS
-def calculate_element_moles(C_moles, ele_ratio):
-    '''
-    Calculates the moles of each element in a compound based on the moles of carbon (C) and the mass percentage ratios of other elements relative to carbon.
+
+# Calculate moles of each element based on carbon moles and elemental mass ratios
+def calculate_element_moles(C_moles: float, ele_ratio: dict) -> dict:
+    """Calculate the moles of each element in a compound based on the moles of carbon (C)
+    and the mass percentage ratios of other elements relative to carbon.
 
     Parameters
     ----------
     C_moles : float
-              The carbon counts in the compound.
+        The carbon counts in the compound.
     ele_ratio : dict
-               Elemental percentage
+        Elemental percentage (e.g., {'C': 80, 'H': 10, 'O': 10}).
+
     Returns
     -------
-    element_moles : dict
-                    Number of each element in the compound. 
-    '''
+    dict
+        Number of each element in the compound.
+    """
     atomic_masses = {'C': 12.01, 'H': 1.008, 'O': 16.00, 'N': 14.01, 'S': 32.07}
     
     molar_ratios = {}
@@ -122,22 +135,25 @@ def calculate_element_moles(C_moles, ele_ratio):
 
     return element_moles
 
-def merge_count_atoms(smiles):
-    '''
-    Calculate the target property of each element of a molecule.
+
+# Merge atom counts based on SMILES representation
+def merge_count_atoms(smiles: str) -> dict:
+    """Calculate the target property of each element of a molecule.
 
     Parameters
     ----------
-    smiles : string
-            SMILES of a molecule
+    smiles : str
+        SMILES of a molecule.
+
     Returns
     -------
-    atom_counts: dict
-                 {'C_N_ar': 15, 'C_al': 0, 'O_S': 1, 'H': 7}
-    '''
+    dict
+        A dictionary of atom counts (e.g., {'C_N_ar': 15, 'C_al': 0, 'O_S': 1, 'H': 7}).
+    """
     atom_counts = {'C_N_ar': 0, 'C_al': 0, 'O_S': 0, 'H': 0}
     molecule = Chem.MolFromSmiles(smiles)
     molecule = Chem.AddHs(molecule)  # Add Hydrogens
+
     for atom in molecule.GetAtoms():
         symbol = atom.GetSymbol()
         if symbol == 'C' or symbol == 'N':
@@ -149,23 +165,25 @@ def merge_count_atoms(smiles):
             atom_counts['O_S'] += 1
         if symbol == 'H':
             atom_counts['H'] += 1
+
     return atom_counts
 
-def getPackage(total_smiles_list):
-    '''
-    Sorts a list of SMILES based on their calculated elemental compositions.
+
+# Sort SMILES based on elemental compositions
+def getPackage(total_smiles_list: list) -> list:
+    """Sorts a list of SMILES based on their calculated elemental compositions.
     The sorting criteria prioritize compounds with higher ratios of certain elements to H.
 
     Parameters
     ----------
     total_smiles_list : list
-                        A list of SMILES.
+        A list of SMILES.
 
     Returns
     -------
     list
         A list of SMILES strings sorted according to their elemental composition ratios.
-    '''
+    """
     # Calculate the atom counts and adjust H count for each SMILES string
     adjusted_packages = [{
         'smiles': smiles,
@@ -189,58 +207,56 @@ def getPackage(total_smiles_list):
 
     return sorted_smiles_list
 
-def recommended_carbonyl_hydroxyl(C_moles, ele_ratio):
-    # Initial calculations
-    atom_num = calculate_element_moles(C_moles, ele_ratio)
-    """
-    Calculate the number of carbonyl and hydroxyl groups based on atom counts and compound type.
+
+# Calculate the number of carbonyl and hydroxyl groups
+def recommended_carbonyl_hydroxyl(C_moles: float, ele_ratio: dict) -> Tuple[int, int]:
+    """Calculate the number of carbonyl and hydroxyl groups based on atom counts and compound type.
 
     Parameters
     ----------
-    atom_num : dict
-               Atom counts for 'C', 'H', 'O', 'N', 'S'.
+    C_moles : float
+        Number of carbon atoms in the compound.
+    ele_ratio : dict
+        Elemental percentage (e.g., {'C': 80, 'H': 10, 'O': 10}).
 
     Returns
     -------
-    carbonyl : int
-               Number of carbonyl groups.
-    hydroxyl : int
-               Number of hydroxyl groups.
+    Tuple[int, int]
+        The number of carbonyl and hydroxyl groups in the compound.
     """
+    atom_num = calculate_element_moles(C_moles, ele_ratio)
+    
     total_mass = atom_num['C'] * 12 + atom_num['H'] * 1 + atom_num['O'] * 16 + atom_num['N'] * 14 + atom_num['S'] * 32
 
     carbonyl = round((0.01 * total_mass) / 16)
     hydroxyl = round((0.02 * total_mass) / 16)
+
     return carbonyl, hydroxyl
 
-def getTarget(C90, ele_ratio, C_moles, carbonyl, hydroxyl):
-    """
-    Adjusts the target atom counts for a chemical compound based on specified carbon moles,
-    elemental mass ratios, a carbon atom rate, coal type, and the percentages of carboxyl and hydroxyl groups.
+
+# Adjust the target atom counts for a compound
+def getTarget(C90: float, ele_ratio: dict, C_moles: float, carbonyl: int, hydroxyl: int) -> Tuple[dict, dict]:
+    """Adjusts the target atom counts for a chemical compound based on specified carbon moles,
+    elemental mass ratios, and the percentages of carboxyl and hydroxyl groups.
 
     Parameters
     ----------
     C90 : float
-          The degree of aromaticity.
+        The degree of aromaticity.
     ele_ratio : dict
-                Element symbols ('C', 'H', 'O', 'N', 'S') as keys and their mass percentages as values.
+        Elemental mass percentages (e.g., {'C': 80, 'H': 10, 'O': 10}).
     C_moles : float
-              Number of C atom.
-    compound_type : str
-                    Type of coal, such as 'lignite'.
+        The number of carbon atoms.
     carbonyl : int
-               Number of carbonyl groups.
+        The number of carbonyl groups.
     hydroxyl : int
-               Number of hydroxyl groups.
+        The number of hydroxyl groups.
 
     Returns
     -------
-    atom_num : dict
-               Calculate chemical formula.
-    adjusted_target : dict
-                      Target number of atoms.
+    Tuple[dict, dict]
+        The calculated chemical formula and the adjusted target atom counts.
     """
-    # Initial calculations
     atom_num = calculate_element_moles(C_moles, ele_ratio)
 
     # Adjust targets based on carbonyl and hydroxyl values
@@ -257,49 +273,80 @@ def getTarget(C90, ele_ratio, C_moles, carbonyl, hydroxyl):
     return atom_num, adjusted_target
     
 
-def build_H_nested_dict(sorted_choices):
+def build_H_nested_dict(sorted_choices: List[Dict[str, int]]) -> Dict[int, Dict[int, int]]:
     """
-    Constructs a nested dictionary to store the minimum values of hydrogen atoms (H) based on combinations of C_N_ar (carbon-nitrogen aromatic count) and O_S (oxygen-sulfur count).
+    Constructs a nested dictionary to store the minimum hydrogen (H) values for combinations 
+    of carbon-nitrogen aromatic count (C_N_ar) and oxygen-sulfur count (O_S) from a list of compounds.
+
+    The function iterates over the provided list of compound data (sorted_choices) and for each
+    unique combination of C_N_ar (carbon-nitrogen aromatic count) and O_S (oxygen-sulfur count),
+    it records the minimum hydrogen (H) value. The result is stored in a nested dictionary format 
+    where the first level keys are 'C_N_ar' values, the second level keys are 'O_S' values, and 
+    the values are the minimum 'H' values for those combinations.
 
     Parameters
     ----------
-    sorted_choices : list of dicts
-        A list where each dictionary represents a compound with keys for 'C_N_ar', 'O_S', and 'H' corresponding to carbon-nitrogen aromatic count, oxygen-sulfur count, and hydrogen count, respectively.
+    sorted_choices : List[Dict[str, int]]
+        A list of dictionaries where each dictionary represents a compound with the following keys:
+        - 'C_N_ar' (int): The count of carbon-nitrogen aromatic bonds in the compound.
+        - 'O_S' (int): The count of oxygen-sulfur bonds in the compound.
+        - 'H' (int): The number of hydrogen atoms in the compound.
+        
+        The list represents multiple compounds with different combinations of C_N_ar, O_S, and H values.
 
     Returns
     -------
-    dict
-        A nested dictionary where the first level keys are 'C_N_ar' values, the second level keys are 'O_S' values, and the values are the minimum 'H' values for those combinations.
-    
+    Dict[int, Dict[int, int]]
+        A nested dictionary where the first level keys are C_N_ar values (int), the second level 
+        keys are O_S values (int), and the values are the minimum H values (int) for the given combinations. 
+        The structure looks like:
+        {
+            C_N_ar_value1: {
+                O_S_value1: min_H_value,
+                O_S_value2: min_H_value,
+                ...
+            },
+            C_N_ar_value2: {
+                O_S_value1: min_H_value,
+                ...
+            }
+            ...
+        }
+
     Example
     -------
     >>> sorted_choices = [
-        {'C_N_ar': 10, 'O_S': 2, 'H': 12},
-        {'C_N_ar': 10, 'O_S': 2, 'H': 8},
-        {'C_N_ar': 5, 'O_S': 3, 'H': 14}
-    ]
+    >>>     {'C_N_ar': 10, 'O_S': 2, 'H': 12},
+    >>>     {'C_N_ar': 10, 'O_S': 2, 'H': 8},
+    >>>     {'C_N_ar': 5, 'O_S': 3, 'H': 14}
+    >>> ]
     >>> build_H_nested_dict(sorted_choices)
     {10: {2: 8}, 5: {3: 14}}
+
+    Notes
+    -----
+    - The function assumes that the input list (`sorted_choices`) is pre-sorted by 'C_N_ar' and 'O_S' values.
+    - If multiple entries have the same C_N_ar and O_S values, the function will select the minimum H value from those entries.
+    - The function is designed to handle situations where not all combinations of C_N_ar and O_S are present, 
+      in which case those combinations will not appear in the output dictionary.
     """
     nested_dict = defaultdict(lambda: defaultdict(list))
 
-    # Grouping H values into the nested dictionary
+    # Grouping H values into the nested dictionary by C_N_ar and O_S
     for choice in sorted_choices:
         nested_dict[choice['C_N_ar']][choice['O_S']].append(choice['H'])
 
-    # Finding the minimum H value in each list
+    # Finding the minimum H value in each list of H values for a given C_N_ar and O_S combination
     for c_n_ar_key in nested_dict:
         for o_s_key in nested_dict[c_n_ar_key]:
             nested_dict[c_n_ar_key][o_s_key] = min(nested_dict[c_n_ar_key][o_s_key])
 
-    # Converting defaultdict to a standard dict
+    # Convert defaultdict to a standard dictionary for the final output
     return {c_n_ar_key: dict(inner_dict) for c_n_ar_key, inner_dict in nested_dict.items()}
 
 def find_combinations(sorted_choices, target_C_N_ar):
     """
     Finds all unique combinations of 'C_N_ar' values from 'sorted_choices' that sum up to 'target_C_N_ar'.
-
-    This function performs a depth-first search (DFS) to explore all possible combinations of 'C_N_ar' values that add up to a specified target. It's designed to handle and include each 'C_N_ar' value multiple times if needed to reach the target sum. The results are returned as a list of dictionaries, with each dictionary representing a unique combination where the keys are 'C_N_ar' values and the values are the counts of how many times each 'C_N_ar' is used in that combination.
 
     Parameters
     ----------
@@ -324,155 +371,284 @@ def find_combinations(sorted_choices, target_C_N_ar):
     >>> find_combinations(sorted_choices, 5)
     [{2: 1, 3: 1}, {5: 1}]
    """
-    # Extract and sort unique 'C_N_ar' values to form candidate set
     candidates = list(set(choice['C_N_ar'] for choice in sorted_choices))
     candidates.sort()
 
-    # Define the depth-first search (DFS) function
     def dfs(start, target, path, res):
-        # Base case: if target is reached, add path to results
         if target == 0:
             res.append(path)
             return
-        # Stop searching if target is negative or no more candidates left
         if target < 0 or start == len(candidates):
             return
-        # Avoid using 0 candidate and continue DFS with the next candidate
         if candidates[start] == 0:
             dfs(start + 1, target, path, res)
             return
-        # Include current candidate and continue DFS
         dfs(start, target - candidates[start], path + [candidates[start]], res)
-        # Exclude current candidate and continue DFS with the next candidate
         dfs(start + 1, target, path, res)
 
-    # Initialize results list and start DFS
     res = []
     dfs(0, target_C_N_ar, [], res)
 
-    # Convert each combination from list to dictionary format
     cn_list = []
     for combination in res:
         temp_dict = {key: combination.count(key) for key in candidates}
         cn_list.append(temp_dict)
+    
     return cn_list
 
-def backtrack_combinations(nested_dict_H, selection_dic, target_O_S, max_depth=30):
+
+def backtrack_combinations(nested_dict_H: Dict[int, Dict[int, int]], 
+                            selection_dic: Dict[int, int], 
+                            target_O_S: int, 
+                            max_depth: int = 50) -> List[Dict[int, Dict[int, int]]]:
     """
-    Finds combinations within a nested dictionary that match a specified target for oxygen and sulfur count (O_S) using backtracking.
+    Finds valid combinations of hydrogen (H) counts that match a specified target for oxygen-sulfur (O_S) count 
+    using a backtracking algorithm. This function explores all possible combinations of H and O_S values to 
+    find combinations that meet the target O_S sum and the required hydrogen counts specified in `selection_dic`.
 
     Parameters
     ----------
-    nested_dict_H : dict
-        A nested dictionary where the first level keys are H (hydrogen) counts, and the second level keys are O_S (oxygen and sulfur) counts with their respective counts as values.
-    selection_dic : dict
-        A dictionary indicating the total counts for each H key that must be met in the solution.
+    nested_dict_H : Dict[int, Dict[int, int]]
+        A nested dictionary where the first level keys are hydrogen counts (H) and the second level keys are 
+        oxygen-sulfur counts (O_S). The values are the available counts for each hydrogen (H) and oxygen-sulfur (O_S) combination.
+    
+    selection_dic : Dict[int, int]
+        A dictionary where the keys represent hydrogen counts (H) and the values represent the total number of times
+        each hydrogen count must be used in the final solution.
+
     target_O_S : int
-        The target sum of O_S values that the combinations should match.
+        The target sum of oxygen-sulfur (O_S) values that the selected combinations of H and O_S should match.
+
     max_depth : int, optional
-        The maximum depth to which the backtracking algorithm will explore. Default is 30.
+        The maximum depth to which the backtracking algorithm will explore. Default is 30. This helps control the recursion depth
+        and avoid excessive computation for large inputs.
 
     Returns
     -------
-    list
-        A list of dictionaries, where each dictionary represents a valid combination that matches the target_O_S and adheres to the counts specified in selection_dic.
-   """
+    List[Dict[int, Dict[int, int]]]
+        A list of dictionaries, where each dictionary represents a valid combination of hydrogen (H) and oxygen-sulfur (O_S)
+        values that satisfy the target O_S sum and adhere to the required hydrogen counts as specified in `selection_dic`.
+
+    Example
+    -------
+    >>> nested_dict_H = {
+    >>>     12: {2: 3, 3: 5},
+    >>>     8: {2: 4, 3: 2},
+    >>> }
+    >>> selection_dic = {12: 2, 8: 1}
+    >>> target_O_S = 5
+    >>> backtrack_combinations(nested_dict_H, selection_dic, target_O_S)
+    [{'12': {2: 1, 3: 1}, '8': {2: 1}}]
+
+    Notes
+    -----
+    - The function employs a depth-first search (DFS) approach to explore potential combinations and uses memoization 
+      to avoid recomputing previously explored paths.
+    - If a solution exceeds the `max_depth`, the function will stop further exploration.
+    - The function returns multiple valid solutions if they exist.
+    """
     # Sort H keys in descending order for optimization
     H_keys = sorted(nested_dict_H.keys(), reverse=True)
     solutions = []
     memo = {}
 
-    def convert_to_hashable(current_selection):
+    def convert_to_hashable(current_selection: Dict[int, Dict[int, int]]) -> Tuple:
         """
         Converts the current selection dictionary into a hashable type (tuple) for memoization.
+
+        Parameters
+        ----------
+        current_selection : Dict[int, Dict[int, int]]
+            A dictionary representing the current selection of hydrogen (H) and oxygen-sulfur (O_S) counts. 
+            This dictionary is used to track the ongoing selection during backtracking.
+
+        Returns
+        -------
+        Tuple
+            A tuple representation of the current selection dictionary, making it hashable for memoization.
         """
         return tuple((k, tuple(v.items())) for k, v in current_selection.items())
 
-    def backtrack(remaining_O_S, H_index, current_selection, depth):
+    def backtrack(remaining_O_S: int, H_index: int, current_selection: Dict[int, Dict[int, int]], depth: int) -> List[Dict[int, Dict[int, int]]]:
         """
-        Recursive backtracking function to explore combinations.
+        Recursive backtracking function to explore combinations of hydrogen (H) and oxygen-sulfur (O_S) values.
+
+        Parameters
+        ----------
+        remaining_O_S : int
+            The remaining oxygen-sulfur sum that needs to be matched during backtracking.
+
+        H_index : int
+            The index in the list of hydrogen (H) keys indicating the current hydrogen value being processed.
+
+        current_selection : Dict[int, Dict[int, int]]
+            A dictionary representing the current selection of hydrogen (H) and oxygen-sulfur (O_S) counts. 
+
+        depth : int
+            The current depth of recursion in the backtracking process. Used to control recursion limit.
+
+        Returns
+        -------
+        List[Dict[int, Dict[int, int]]]
+            A list of valid combinations where the hydrogen counts match the selection criteria, and the O_S sum is met.
         """
         # Base case: Stop if maximum depth is exceeded
         if depth > max_depth:
-            return
+            return []
         
         # Check memo to avoid re-exploring known paths
         hashable_key = (remaining_O_S, H_index, convert_to_hashable(current_selection))
         if hashable_key in memo:
-            return
+            return []
 
         # Successful case: If target O_S is met and all H counts match selection criteria
-        if remaining_O_S == 0 and all(sum(current_selection[H].values()) == selection_dic[H] for H in H_keys):
-            solutions.append(copy.deepcopy(current_selection))
-            return
-        
+        if remaining_O_S == 0 and all(
+            sum(current_selection[H].values()) == selection_dic[H] for H in H_keys
+        ):
+            return [copy.deepcopy(current_selection)]
+
         # Base case: Stop if index out of bounds or negative target
         if H_index >= len(H_keys) or remaining_O_S < 0:
-            return
-        
+            return []
+
         current_H = H_keys[H_index]
+        solutions = []
+
         # Explore next H value without adding current H
-        backtrack(remaining_O_S, H_index + 1, current_selection, depth + 1)
+        solutions.extend(backtrack(remaining_O_S, H_index + 1, current_selection, depth + 1))
 
         # Try adding current H and explore further
         for O_S, count in nested_dict_H[current_H].items():
             if sum(current_selection[current_H].values()) < selection_dic[current_H]:
                 current_selection[current_H][O_S] += 1
-                backtrack(remaining_O_S - O_S, H_index, current_selection, depth + 1)
+                solutions.extend(
+                    backtrack(remaining_O_S - O_S, H_index, current_selection, depth + 1)
+                )
                 current_selection[current_H][O_S] -= 1
 
         memo[hashable_key] = True
-                    
+        return solutions
+
     # Initialize the selection with zeros for each possible O_S count under each H key
     initial_selection = {key: {subkey: 0 for subkey in nested_dict_H[key]} for key in nested_dict_H.keys()}
     backtrack(target_O_S, 0, initial_selection, 0)  # Start backtracking with initial conditions
 
     return solutions
 
-
-def parallel_backtrack_combinations(nested_dict_H, selection_dic, target_O_S, max_depth=50, n_jobs=40):
+def parallel_backtrack_combinations(nested_dict_H: Dict[int, Dict[int, int]], 
+                                    selection_dic: Dict[int, int], 
+                                    target_O_S: int, 
+                                    max_depth: int = 50, 
+                                    n_jobs: int = 40) -> List[Dict[int, Dict[int, int]]]:
     """
-    Parallelized version of backtracking to find combinations that match target_O_S.
+    Parallelized version of backtracking to find combinations of hydrogen (H) and oxygen-sulfur (O_S) values 
+    that match a specified target O_S sum, using multiple cores for faster computation. This function explores all 
+    possible combinations of H and O_S values and finds those that meet the target O_S sum while adhering to the 
+    required hydrogen counts specified in `selection_dic`.
 
     Parameters
     ----------
-    nested_dict_H : dict
-        A nested dictionary where the first level keys are H (hydrogen) counts.
-    selection_dic : dict
-        A dictionary specifying total counts for each H key in the solution.
+    nested_dict_H : Dict[int, Dict[int, int]]
+        A nested dictionary where the first level keys represent hydrogen counts (H) and the second level keys 
+        represent oxygen-sulfur (O_S) values. The values in the dictionary represent the number of times each H-O_S 
+        combination can be used.
+
+    selection_dic : Dict[int, int]
+        A dictionary where the keys represent hydrogen counts (H) and the values represent the total number of times 
+        each hydrogen count must be used in the solution.
+
     target_O_S : int
-        The target sum of O_S values to match.
+        The target sum of oxygen-sulfur (O_S) values that the selected combinations of H and O_S should match.
+
+    max_depth : int, optional
+        The maximum depth to which the backtracking algorithm will explore. Default is 50. This parameter is used to control 
+        the recursion depth in the backtracking algorithm, helping to avoid excessive computation for larger inputs.
+
     n_jobs : int, optional
-        Number of parallel jobs (cores) to use.
+        The number of parallel jobs (cores) to use for processing the subtasks. Default is 40. This controls how many parallel 
+        processes the algorithm will use to speed up the backtracking computation.
 
     Returns
     -------
-    list
-        A list of dictionaries, each representing a valid combination.
+    List[Dict[int, Dict[int, int]]]
+        A list of dictionaries, where each dictionary represents a valid combination of hydrogen (H) and oxygen-sulfur (O_S) 
+        values that satisfy the target O_S sum and the required hydrogen counts as specified in `selection_dic`.
+
+    Example
+    -------
+    >>> nested_dict_H = {
+    >>>     12: {2: 3, 3: 5},
+    >>>     8: {2: 4, 3: 2},
+    >>> }
+    >>> selection_dic = {12: 2, 8: 1}
+    >>> target_O_S = 5
+    >>> parallel_backtrack_combinations(nested_dict_H, selection_dic, target_O_S, max_depth=50, n_jobs=4)
+    [{'12': {2: 1, 3: 1}, '8': {2: 1}}]
+
+    Notes
+    -----
+    - The function divides the work into subtasks for parallelization by distributing the combinations to multiple cores.
+    - It uses the `joblib` library for parallel execution, allowing efficient use of multiple CPU cores.
+    - If a solution exceeds the `max_depth`, the function will stop further exploration for that branch.
+    - The function returns all valid combinations that meet the target O_S sum and hydrogen count criteria.
+
     """
     # Sort H keys in descending order for optimization
     H_keys = sorted(nested_dict_H.keys(), reverse=True)
 
-    def convert_to_hashable(current_selection):
+    def convert_to_hashable(current_selection: Dict[int, Dict[int, int]]) -> Tuple:
         """
         Converts the current selection dictionary into a hashable type (tuple) for memoization.
+
+        Parameters
+        ----------
+        current_selection : Dict[int, Dict[int, int]]
+            A dictionary representing the current selection of hydrogen (H) and oxygen-sulfur (O_S) counts.
+
+        Returns
+        -------
+        Tuple
+            A tuple representation of the current selection dictionary, making it hashable for memoization.
         """
         return tuple((k, tuple(v.items())) for k, v in current_selection.items())
 
-    def backtrack(remaining_O_S, H_index, current_selection, depth, memo):
+    def backtrack(remaining_O_S: int, H_index: int, current_selection: Dict[int, Dict[int, int]], 
+                  depth: int, memo: Dict) -> List[Dict[int, Dict[int, int]]]:
         """
-        Recursive backtracking function to explore combinations.
+        Recursive backtracking function to explore combinations of hydrogen (H) and oxygen-sulfur (O_S) values.
+
+        Parameters
+        ----------
+        remaining_O_S : int
+            The remaining oxygen-sulfur sum that needs to be matched during backtracking.
+
+        H_index : int
+            The index in the list of hydrogen (H) keys indicating the current hydrogen value being processed.
+
+        current_selection : Dict[int, Dict[int, int]]
+            A dictionary representing the current selection of hydrogen (H) and oxygen-sulfur (O_S) counts.
+
+        depth : int
+            The current depth of recursion in the backtracking process. Used to control recursion limit.
+
+        memo : Dict
+            A dictionary used for memoization to avoid redundant calculations.
+
+        Returns
+        -------
+        List[Dict[int, Dict[int, int]]]
+            A list of valid combinations where the hydrogen counts match the selection criteria, and the O_S sum is met.
         """
         # Base case: Stop if maximum depth is exceeded
-        if depth > max_depth:  # Max depth hardcoded here
+        if depth > max_depth:
             return []
-
+        
         # Check memo to avoid re-exploring known paths
         hashable_key = (remaining_O_S, H_index, convert_to_hashable(current_selection))
         if hashable_key in memo:
             return []
 
-        # Successful case
+        # Successful case: If target O_S is met and all H counts match selection criteria
         if remaining_O_S == 0 and all(
             sum(current_selection[H].values()) == selection_dic[H] for H in H_keys
         ):
@@ -500,9 +676,21 @@ def parallel_backtrack_combinations(nested_dict_H, selection_dic, target_O_S, ma
         memo[hashable_key] = True
         return solutions
 
-    def generate_subtasks(nested_dict_H):
+    def generate_subtasks(nested_dict_H: Dict[int, Dict[int, int]]) -> List[Tuple[int, int]]:
         """
-        Generate finer-grained subtasks for parallelization.
+        Generate finer-grained subtasks for parallelization by iterating through H and O_S combinations.
+
+        Parameters
+        ----------
+        nested_dict_H : Dict[int, Dict[int, int]]
+            A nested dictionary where the first level keys represent hydrogen counts (H) and the second level keys
+            represent oxygen-sulfur counts (O_S). The values represent the number of available combinations for each.
+
+        Returns
+        -------
+        List[Tuple[int, int]]
+            A list of subtasks, where each subtask is a tuple consisting of a hydrogen count (H) and an oxygen-sulfur
+            count (O_S).
         """
         subtasks = []
         for H_key, sub_dict in nested_dict_H.items():
@@ -510,9 +698,22 @@ def parallel_backtrack_combinations(nested_dict_H, selection_dic, target_O_S, ma
                 subtasks.append((H_key, O_S_key))
         return subtasks
 
-    def backtrack_for_subtask(H_key, O_S_key):
+    def backtrack_for_subtask(H_key: int, O_S_key: int) -> List[Dict[int, Dict[int, int]]]:
         """
         Perform backtracking for a specific H and O_S combination.
+
+        Parameters
+        ----------
+        H_key : int
+            The hydrogen count (H) for this subtask.
+
+        O_S_key : int
+            The oxygen-sulfur count (O_S) for this subtask.
+
+        Returns
+        -------
+        List[Dict[int, Dict[int, int]]]
+            A list of valid combinations for the given H and O_S combination.
         """
         memo = {}
         initial_selection = {
@@ -538,23 +739,51 @@ def parallel_backtrack_combinations(nested_dict_H, selection_dic, target_O_S, ma
     return combined_solutions
 
 
-def find_matching_indices(selection, sorted_choices):
+def find_matching_indices(selection: Dict[int, Dict[int, int]], 
+                          sorted_choices: List[Dict[str, int]]) -> List[int]:
     """
     Finds indices in 'sorted_choices' that match the criteria specified in 'selection',
-    considering constraints on repetition.
+    considering constraints on repetition and randomly selecting from matching indices 
+    while adhering to the repetition limits.
+
+    This function takes a nested dictionary 'selection' that specifies how many times each 
+    combination of 'C_N_ar' and 'O_S' should be selected, then finds the corresponding 
+    indices from 'sorted_choices' that meet these criteria while enforcing limits on the 
+    number of times each index can be chosen.
 
     Parameters
     ----------
     selection : dict
-        A nested dictionary where the first level keys are 'C_N_ar' values, and the second level keys are 'O_S' values, each with an integer indicating how many times that combination should be selected.
+        A nested dictionary where the first level keys represent 'C_N_ar' values, and the second 
+        level keys represent 'O_S' values. The values are integers indicating how many times that 
+        specific combination of 'C_N_ar' and 'O_S' should be selected.
+
     sorted_choices : list of dicts
-        A list where each dictionary represents a possible choice with 'C_N_ar' and 'O_S' keys among potentially others.
+        A list where each dictionary represents a possible choice. Each dictionary contains keys such 
+        as 'C_N_ar' and 'O_S' among others. These are the possible combinations from which the function 
+        selects the matching indices according to the specified criteria in 'selection'.
 
     Returns
     -------
-    indices : list
-             A list of indices from 'sorted_choices' that match the 'selection' criteria. 
-             Each index corresponds to an entry in 'sorted_choices' that fits one of the combinations specified in 'selection' and is chosen considering the maximum repetition allowed.
+    indices : list of int
+        A list of indices from 'sorted_choices' that match the 'selection' criteria. Each index corresponds 
+        to an entry in 'sorted_choices' that fits one of the combinations specified in 'selection'. 
+        The indices are chosen while respecting the maximum repetition allowed for each index.
+
+    Example
+    -------
+    >>> selection = {2: {3: 2}, 4: {5: 1}}
+    >>> sorted_choices = [{'C_N_ar': 2, 'O_S': 3}, {'C_N_ar': 2, 'O_S': 3}, {'C_N_ar': 4, 'O_S': 5}]
+    >>> find_matching_indices(selection, sorted_choices)
+    [0, 1, 2]
+    
+    Notes
+    -----
+    - The function ensures that each index is selected within the limit specified by 'selection'.
+    - Random selection is used from matching indices, and the selection is done uniformly with respect to 
+      the repetition constraints.
+    - If there are more requested selections than matching options, the available indices will be selected 
+      multiple times while adhering to the specified repeat limits.
     """
     indices = []
     max_repeat_times = {}  # Tracks the number of times each index is selected
@@ -582,61 +811,129 @@ def find_matching_indices(selection, sorted_choices):
 
     return indices
 
-def generate_candidate_smiles(min_H_selection, sorted_choices, sorted_smiles_list, target_C_al):
+def generate_candidate_smiles(min_H_selection: Dict[int, Dict[int, int]], 
+                               sorted_choices: List[Dict[str, int]], 
+                               sorted_smiles_list: List[str], 
+                               target_C_al: int) -> Tuple[List[str], str]:
     """
-    Generates a list of candidate SMILES strings based on a selection criteria, and calculates the predicted chemical formula for these candidates, adjusting for a target count of aliphatic carbon (C_al).
+    Generates a list of candidate SMILES strings based on a selection criteria, 
+    and calculates the predicted chemical formula for these candidates, adjusting 
+    for a target count of aliphatic carbon (C_al).
+
+    This function selects candidate SMILES strings from a given list based on the hydrogen 
+    selection criteria provided in `min_H_selection`. After selecting the candidates, 
+    it calculates the total number of aliphatic carbon atoms (C_al) and adjusts the selection 
+    to meet the target number of aliphatic carbons specified by `target_C_al`. 
 
     Parameters
     ----------
     min_H_selection : dict
-        A selection criteria specifying the minimum hydrogen count selections for candidates.
+        A nested dictionary specifying the minimum selection criteria for hydrogen counts in 
+        the candidates. The keys represent the hydrogen groupings, and the values indicate 
+        the number of selections for each combination.
+
     sorted_choices : list of dicts
-        A list of dictionaries, each representing a choice with details including 'C_N_ar', 'C_al', 'O_S', and 'H' counts.
+        A list of dictionaries where each dictionary contains properties like 'C_N_ar', 'C_al', 
+        'O_S', and 'H' counts corresponding to possible chemical choices.
+
     sorted_smiles_list : list of str
-        A list of SMILES strings corresponding to the choices in `sorted_choices`.
+        A list of SMILES strings corresponding to the chemical choices in `sorted_choices`.
+
     target_C_al : int
-        The target total count of aliphatic carbon atoms in the combined candidates.
+        The target total number of aliphatic carbon atoms (C_al) that the final set of selected 
+        candidates should contain.
 
     Returns
     -------
     tuple
         - A list of selected candidate SMILES strings that meet the selection criteria.
-        - A string representing the predicted chemical formula of the combined candidates, adjusting for any additional carbon atoms to meet the target C_al count.
+        - A string representing the predicted chemical formula of the combined candidates, 
+          adjusting for any additional carbon atoms to meet the target C_al count.
+
+    Example
+    -------
+    >>> min_H_selection = {2: {3: 2}, 4: {5: 1}}
+    >>> sorted_choices = [{'C_N_ar': 2, 'C_al': 3, 'O_S': 2, 'H': 5}, {'C_N_ar': 2, 'C_al': 4, 'O_S': 1, 'H': 4}]
+    >>> sorted_smiles_list = ['CC(C)C', 'CCO']
+    >>> target_C_al = 8
+    >>> generate_candidate_smiles(min_H_selection, sorted_choices, sorted_smiles_list, target_C_al)
+    (['CC(C)C', 'CCO', 'C', 'C'], 'C4H8O2')
+
+    Notes
+    -----
+    - The function selects candidates based on hydrogen counts and the corresponding 
+      SMILES strings.
+    - If the total C_al value from selected candidates is less than the target, extra 
+      carbon atoms are added (represented as 'C') to meet the required target.
+    - The final chemical formula is calculated based on the selected candidates and the 
+      added carbon atoms.
     """
+    # Find matching indices based on the minimum hydrogen selection criteria
     indices = find_matching_indices(min_H_selection, sorted_choices)
+    
+    # Generate a list of selected candidate SMILES strings based on the indices
     candidate_smiles_list = [sorted_smiles_list[i] for i in indices]
+    
+    # Generate legends (string representations) of the selected choices
     selected_legends = [str(sorted_choices[i]) for i in indices]
 
-    # Extract values for C_N_ar, C_al, and O_S from the selection legends
+    # Extract 'C_al' values from the selected choices' legends
     C_al_values = [ast.literal_eval(legend)['C_al'] for legend in selected_legends]
-    total_C_al = sum(C_al_values)
-    additional_C_al = target_C_al - total_C_al
-    added_value = max(additional_C_al, 0)
+    total_C_al = sum(C_al_values)  # Calculate the total C_al count
+    additional_C_al = target_C_al - total_C_al  # Calculate how many extra carbon atoms are needed
+    added_value = max(additional_C_al, 0)  # Ensure no negative values for added carbon atoms
 
-    # Additional extractions are redundant as values are recalculated without being used again
-    # Calculation of total counts is directly followed by the adjustment for extra carbons
+    # Add extra carbon atoms if necessary to meet the target C_al
     for _ in range(added_value):
         candidate_smiles_list.append('C')
 
+    # Count the atoms in the selected candidates and the additional carbon atoms
     element_counts = count_atoms(candidate_smiles_list)
 
     return candidate_smiles_list, element_counts
 
-def find_min_H_selection(self, all_final_selections):
+def find_min_H_selection(self, all_final_selections: list) -> dict:
     """
-    Finds the selection from all possible combinations that results in the minimum total H count.
+    Finds the selection from all possible combinations that results in the minimum total hydrogen (H) count.
+
+    This function evaluates a list of possible selections (`all_final_selections`) and calculates the total 
+    hydrogen (H) count for each selection. It then returns the selection with the minimum hydrogen count. 
+    The total H count for a selection is computed by iterating through each hydrogen value and its respective 
+    counts in the selection, using the data from `self.nested_dict_H` to calculate the contribution of each 
+    combination.
 
     Parameters
     ----------
-    all_final_selections : list
-        A list of dictionaries, each representing a final selection of combinations with their respective counts.
+    all_final_selections : list of dict
+        A list of dictionaries where each dictionary represents a potential selection of combinations. 
+        Each dictionary contains keys representing hydrogen (H) values and their associated oxygen-sulfur (O_S) values, 
+        with counts indicating how many times a specific combination is chosen.
 
     Returns
     -------
     dict
-        The selection (a dictionary) from `all_final_selections` that has the minimum total H count.
+        The selection (a dictionary) from `all_final_selections` that has the minimum total hydrogen count. 
+        If there are multiple selections with the same total hydrogen count, the first one encountered will be returned.
+
+    Example
+    -------
+    >>> all_final_selections = [
+    >>>     {2: {3: 1, 4: 2}, 4: {5: 1}},
+    >>>     {2: {3: 3}, 4: {5: 2}},
+    >>> ]
+    >>> find_min_H_selection(all_final_selections)
+    {2: {3: 1, 4: 2}, 4: {5: 1}}
+
+    Notes
+    -----
+    - The function calculates the total hydrogen count by iterating through each hydrogen value (H) 
+      and its respective oxygen-sulfur (O_S) combinations, multiplying the counts by the corresponding 
+      values from `self.nested_dict_H`.
+    - The selection with the smallest total H count is returned. This can be useful for minimizing resource 
+      usage or optimizing a process that relies on hydrogen consumption.
+
     """
-    # Initialize variables to track the minimum H count and the corresponding selection
+    # Initialize variables to track the minimum hydrogen count and the corresponding selection
     min_total_H = float('inf')
     min_H_selection = None
 
@@ -657,11 +954,12 @@ def find_min_H_selection(self, all_final_selections):
     return min_H_selection
 
 
-# Generate final coal from substructures
-
-def show_atom_number(mol, label):
+def show_atom_number(mol: Chem.Mol, label: str) -> Chem.Mol:
     """
     Label each atom in the given molecule with its index.
+
+    This function modifies the input RDKit molecule by adding a property to each atom 
+    that stores its index. This index can later be accessed using the provided label.
 
     Parameters
     ----------
@@ -673,17 +971,37 @@ def show_atom_number(mol, label):
     Returns
     -------
     mol : rdkit.Chem.Mol
-        The RDKit molecule object with atoms labeled with their indices. Note that the molecule is modified in place, so the returned object is the same as the input object.
+        The RDKit molecule object with atoms labeled with their indices. Note that the molecule is modified in place, 
+        so the returned object is the same as the input object.
+    
+    Example
+    -------
+    >>> mol = Chem.MolFromSmiles('CCO')
+    >>> labeled_mol = show_atom_number(mol, 'atom_index')
+    >>> for atom in labeled_mol.GetAtoms():
+    >>>     print(atom.GetProp('atom_index'))
+    0
+    1
+    2
+
+    Notes
+    -----
+    - The atom index is stored as a string property under the specified `label`.
+    - This function is useful for identifying and tracking individual atoms in a molecule, especially when performing atom-level analysis.
     """
     for atom in mol.GetAtoms():
         atom.SetProp(label, str(atom.GetIdx()))
     return mol
 
-def find_required_aldehyde_carbons(smiles):
+
+def find_required_aldehyde_carbons(smiles: str) -> list:
     """
     Identifies carbon atoms in a molecule that are part of an aldehyde group. 
     An aldehyde carbon is defined as a carbon atom having exactly three neighbors: 
     one carbon (C), one hydrogen (H), and one oxygen (O).
+
+    This function processes a SMILES string to identify the aldehyde group carbon atoms 
+    by checking their neighbors and ensures that the carbon atom meets the criteria for being part of an aldehyde group.
 
     Parameters
     ----------
@@ -693,8 +1011,19 @@ def find_required_aldehyde_carbons(smiles):
     Returns
     -------
     list
-        A list of indices corresponding to carbon atoms that are part of an aldehyde group within the molecule.
+        A list of indices corresponding to carbon atoms that are part of an aldehyde group within the molecule. 
         Atom indices are zero-based, matching the order in which atoms appear in the RDKit molecule object.
+
+    Example
+    -------
+    >>> find_required_aldehyde_carbons('C=O')
+    [0]
+
+    Notes
+    -----
+    - The function creates an RDKit molecule object from the provided SMILES string and adds hydrogens explicitly to the molecule for better atom detection.
+    - The carbon atoms are considered part of an aldehyde if they are bonded to one hydrogen, one carbon, and one oxygen atom.
+    - This can be useful in synthetic chemistry or molecular analysis where aldehyde functionalities need to be identified.
     """
     # Create a molecule object from SMILES and add hydrogens explicitly
     mol = Chem.AddHs(Chem.MolFromSmiles(smiles))
@@ -719,9 +1048,15 @@ def find_required_aldehyde_carbons(smiles):
     # Return the list of carbon atom indices that are part of an aldehyde group
     return carbons
 
-def find_beta_carbons(smiles):
+
+def find_beta_carbons(smiles: str) -> list:
     """
     Identifies pairs of aldehyde (carbonyl) carbon atoms and their beta carbon atoms in a molecule.
+
+    This function finds aldehyde carbon atoms (part of a carbonyl group) and identifies the beta carbon atoms 
+    that are bonded to them. Beta carbon atoms are those directly bonded to an alpha carbon, which is 
+    directly bonded to the aldehyde carbon. The function returns a list of tuples where each tuple contains 
+    the index of an aldehyde carbon atom and the index of a corresponding beta carbon atom.
 
     Parameters
     ----------
@@ -734,6 +1069,17 @@ def find_beta_carbons(smiles):
         A list of tuples where each tuple contains two integers. The first integer is the index of an aldehyde carbon atom, 
         and the second is the index of a corresponding beta carbon atom that is bonded to at least one hydrogen atom.
         Atom indices are zero-based and correspond to the order in which atoms appear in the RDKit molecule object.
+
+    Example
+    -------
+    >>> find_beta_carbons('CC(=O)C')
+    [(1, 0)]
+
+    Notes
+    -----
+    - The function identifies aldehyde (carbonyl) carbon atoms and traces their alpha and beta carbons.
+    - The beta carbon is selected only if it is bonded to at least one hydrogen atom, ensuring that it is a valid beta carbon.
+    - This function is useful in organic chemistry when looking for specific structural motifs around aldehyde groups.
     """
     # Get indices of aldehyde carbon atoms
     aldehyde_carbons = find_required_aldehyde_carbons(smiles)
@@ -768,9 +1114,14 @@ def find_beta_carbons(smiles):
 
     return carbon_pairs
 
-def connect_rings_C3(smiles1):
+def connect_rings_C3(smiles1: str) -> str or None:
     """
     Connects a given molecule with a propane molecule at identified beta carbon positions.
+
+    This function takes an initial molecule represented by a SMILES string and connects it to a propane molecule
+    ('CCC') at the beta carbon positions identified in the initial molecule. If suitable beta carbon atoms 
+    (those that are part of aldehyde groups) are found, it adds a propane unit at those positions and returns 
+    the modified molecule as a new SMILES string. If no suitable positions are found, it returns None.
 
     Parameters
     ----------
@@ -782,18 +1133,36 @@ def connect_rings_C3(smiles1):
     str or None
         A SMILES string representing the modified molecule after connection with propane. 
         If no suitable carbon atoms are found for the connection, returns None.
+
+    Example
+    -------
+    >>> connect_rings_C3('CC(=O)C')
+    'CC(=O)CCC'
+
+    Notes
+    -----
+    - This function uses the RDKit library to manipulate molecular structures.
+    - The propane molecule is added at the beta carbon positions found in the input molecule.
+    - If no suitable aldehyde carbon atoms (those that can be connected to propane) are found, the function will print 
+      a message and return None.
+    - The function assumes that the propane molecule ('CCC') can be directly connected to the identified positions 
+      without additional steric or electronic considerations.
     """
     smiles2 = 'CCC'
     
+    # Convert input SMILES strings to RDKit molecule objects
     mol1 = Chem.MolFromSmiles(smiles1)
     mol2 = Chem.MolFromSmiles(smiles2)
     
+    # Find beta carbon positions in the initial molecule
     carbons1_list = find_beta_carbons(smiles1)
 
+    # If no suitable beta carbon atoms are found, return None
     if not carbons1_list:
         print("No suitable aldehyde carbon atom found in the molecule")
         return None
 
+    # For each identified pair of aldehyde and beta carbon atoms, combine molecules
     for chosen_pair1 in carbons1_list:
         combined = Chem.CombineMols(mol1, mol2)
         edit_combined = Chem.EditableMol(combined)
@@ -807,34 +1176,60 @@ def connect_rings_C3(smiles1):
         edit_combined.AddBond(index1, index3, order=BondType.SINGLE)
         edit_combined.AddBond(index2, index4, order=BondType.SINGLE)
 
+        # Update mol1 to the modified molecule
         mol1 = edit_combined.GetMol()
         Chem.SanitizeMol(mol1)
 
+    # Return the SMILES string for the modified molecule
     return Chem.MolToSmiles(mol1)
 
-def update_smiles_lists(smiles_list1, smiles_list2):
+def update_smiles_lists(smiles_list1: list, smiles_list2: list) -> tuple or None:
     """
     Processes two lists of SMILES strings: connects propane molecules to the first list's molecules if specific criteria are met, 
     and then adjusts the second list by removing elements to compensate for the carbons added to the first list.
 
+    This function iterates through the first list of SMILES (`smiles_list1`) and connects a propane molecule ('CCC') 
+    to the molecules that meet specific criteria (those containing aldehyde carbon atoms). It then calculates the 
+    difference in the number of carbon atoms between the original and modified molecules in the first list. 
+    Based on this difference, it adjusts the second list (`smiles_list2`) by removing the necessary number of elements 
+    to compensate for the added carbons.
+
     Parameters
     ----------
     smiles_list1 : list of str
-        The first list of SMILES strings to be potentially modified by connecting propane molecules.
+        The first list of SMILES strings to be potentially modified by connecting propane molecules. 
+        Each molecule in this list is checked for the presence of aldehyde carbon atoms and modified if necessary.
     smiles_list2 : list of str
-        The second list of SMILES strings to be adjusted by removing elements based on the number of carbons added to the first list.
+        The second list of SMILES strings, from which elements will be removed to compensate for the carbons added to the first list.
 
     Returns
     -------
     tuple of lists or None
-        Returns a tuple containing two lists:
+        A tuple containing two lists:
         - The modified first list with propane molecules connected as applicable.
         - The adjusted second list with elements removed to compensate for added carbons.
+        
         If there are not enough elements in the second list to compensate for the added carbons, returns None.
-   """
+
+    Example
+    -------
+    >>> smiles_list1 = ['CC(=O)C', 'CCC']
+    >>> smiles_list2 = ['C', 'C', 'C', 'C', 'C', 'C']
+    >>> update_smiles_lists(smiles_list1, smiles_list2)
+    (['CC(=O)CCC', 'CCC'], ['C', 'C', 'C', 'C'])
+
+    Notes
+    -----
+    - The function uses the `connect_rings_C3` and `find_required_aldehyde_carbons` functions to identify which molecules 
+      in the first list require modification.
+    - If the second list does not have enough elements to accommodate the added carbons, the function prints an error message 
+      and returns `None`.
+    - The function assumes that elements in the second list are simple carbon atoms represented by the SMILES string `'C'`.
+    """
     new_smiles_list1 = []
     carbon_diff = 0
     
+    # Iterate through the first list and process each molecule
     for smiles in smiles_list1:
         if find_required_aldehyde_carbons(smiles):
             new_smiles = connect_rings_C3(smiles)
@@ -842,34 +1237,52 @@ def update_smiles_lists(smiles_list1, smiles_list2):
             new_smiles = smiles
         new_smiles_list1.append(new_smiles)
 
+        # Calculate the change in the number of carbon atoms
         old_carbons = smiles.count('C')
         new_carbons = new_smiles.count('C')
-        
         carbon_diff += new_carbons - old_carbons
 
+    # Check if there are enough elements in the second list to compensate for the added carbons
     if carbon_diff > len(smiles_list2):
         print(f"Not enough carbons in the second list to compensate the increase in the first list. Needed: {carbon_diff}, Available: {len(smiles_list2)}")
         return None
 
+    # Adjust the second list by removing elements
     new_smiles_list2 = smiles_list2[carbon_diff:]
     
     return new_smiles_list1, new_smiles_list2
 
 
-def find_required_carbons(smiles):
+def find_required_carbons(smiles: str) -> list:
     """
     Identifies carbon atoms in a molecule that are connected to exactly two other carbon (or nitrogen) atoms and one hydrogen atom.
     
+    This function analyzes the given SMILES string and identifies carbon atoms that satisfy the following conditions:
+    - The carbon atom is connected to exactly two other carbon (or nitrogen) atoms.
+    - The carbon atom is also connected to exactly one hydrogen atom.
+
     Parameters
     ----------
     smiles : str
-        A SMILES string representing the molecular structure to be analyzed.
+        A SMILES string representing the molecular structure to be analyzed. This string should be valid and represent a molecule in which 
+        carbon atoms meet the specified connectivity criteria.
 
     Returns
     -------
     list
-        A list of indices corresponding to carbon atoms that meet the specified connectivity criteria within the molecule.
+        A list of indices corresponding to carbon atoms that meet the specified connectivity criteria within the molecule. 
         Atom indices are zero-based, matching the order in which atoms appear in the RDKit molecule object.
+
+    Example
+    -------
+    >>> find_required_carbons('CC(N)C')
+    [0]
+
+    Notes
+    -----
+    - The function uses RDKit to parse the SMILES string and then explicitly adds hydrogens to the molecule for proper analysis.
+    - The function checks each carbon atom in the molecule for connectivity with exactly two other carbons (or nitrogen atoms) 
+      and exactly one hydrogen atom. If these conditions are met, the atom's index is added to the result list.
     """
     # Create an RDKit molecule object from the SMILES string and add hydrogens explicitly
     molecule = Chem.AddHs(Chem.MolFromSmiles(smiles))
@@ -898,46 +1311,102 @@ def find_required_carbons(smiles):
     # Return the list of indices of carbon atoms meeting the criteria
     return required_carbons
 
-def _find_adjacent_pairs(carbons, molecule):
+def find_required_carbons(smiles: str) -> list:
     """
-    Identifies pairs of adjacent carbon atoms suitable for connection.
+    Identifies carbon atoms in a molecule that are connected to exactly two other carbon (or nitrogen) atoms and one hydrogen atom.
     
+    This function analyzes the given SMILES string and identifies carbon atoms that satisfy the following conditions:
+    - The carbon atom is connected to exactly two other carbon (or nitrogen) atoms.
+    - The carbon atom is also connected to exactly one hydrogen atom.
+
     Parameters
     ----------
-    carbons : list of int
-        Indices of carbon atoms considered for forming pairs.
-    molecule : rdkit.Chem.rdchem.Mol
-        The molecule object containing the carbon atoms.
-    
+    smiles : str
+        A SMILES string representing the molecular structure to be analyzed. This string should be valid and represent a molecule in which 
+        carbon atoms meet the specified connectivity criteria.
+
     Returns
     -------
-    list of tuples
-        A list containing tuples, each with two integers representing the indices of adjacent carbon atoms suitable for connection.
-    """
-    index_pairs = []
-    for i in range(len(carbons)):
-        atom = molecule.GetAtomWithIdx(carbons[i])
-        for neighbor in atom.GetNeighbors():
-            if neighbor.GetSymbol() == 'C' and neighbor.GetIdx() in carbons:
-                if carbons[i] < neighbor.GetIdx():  # Prevent duplicates
-                    index_pairs.append((carbons[i], neighbor.GetIdx()))
-    return index_pairs
+    list
+        A list of indices corresponding to carbon atoms that meet the specified connectivity criteria within the molecule. 
+        Atom indices are zero-based, matching the order in which atoms appear in the RDKit molecule object.
 
-def _connect_ring_C(mol1, mol2, chosen_pair1, chosen_pair2):
+    Example
+    -------
+    >>> find_required_carbons('CC(N)C')
+    [0]
+
+    Notes
+    -----
+    - The function uses RDKit to parse the SMILES string and then explicitly adds hydrogens to the molecule for proper analysis.
+    - The function checks each carbon atom in the molecule for connectivity with exactly two other carbons (or nitrogen atoms) 
+      and exactly one hydrogen atom. If these conditions are met, the atom's index is added to the result list.
+    """
+    # Create an RDKit molecule object from the SMILES string and add hydrogens explicitly
+    molecule = Chem.AddHs(Chem.MolFromSmiles(smiles))
+    
+    # Initialize a list to store indices of carbon atoms meeting the criteria
+    required_carbons = []
+
+    # Iterate over all atoms in the molecule
+    for atom in molecule.GetAtoms():
+        # Check if the atom is a carbon atom
+        if atom.GetSymbol() == "C":
+            # Get all neighboring atoms of the current carbon atom
+            neighbors = atom.GetNeighbors()
+            
+            # Count the number of carbon (or nitrogen) neighbors
+            carbon_neighbors = len([neighbor for neighbor in neighbors if neighbor.GetSymbol() == 'C' or neighbor.GetSymbol() == 'N'])
+
+            # Count the number of hydrogen neighbors
+            hydrogen_neighbors = len([neighbor for neighbor in neighbors if neighbor.GetSymbol() == 'H'])
+
+            # If the carbon atom is connected to exactly two carbon (or nitrogen) atoms and one hydrogen atom
+            if carbon_neighbors == 2 and hydrogen_neighbors == 1:
+                # Add the index of the carbon atom to the list
+                required_carbons.append(atom.GetIdx())
+    
+    # Return the list of indices of carbon atoms meeting the criteria
+    return required_carbons
+
+def _connect_ring_C(mol1: Chem.Mol, mol2: Chem.Mol, chosen_pair1: tuple, chosen_pair2: tuple) -> Chem.Mol:
     """
     Connects two molecules using two methane molecules to simulate the addition of methyl groups at specified carbon atoms.
 
+    This function modifies the input molecules `mol1` and `mol2` by adding two methyl groups (from two methane molecules) at
+    the specified carbon atom positions. The carbon atoms are connected according to the indices in `chosen_pair1` for 
+    `mol1` and `chosen_pair2` for `mol2`.
+
     Parameters
     ----------
-    mol1, mol2 : RDKit Mol
-        The molecule objects to be connected.
-    chosen_pair1, chosen_pair2 : tuple
-        Pairs of carbon atom indices in mol1 and mol2, respectively, where the methane molecules will be connected.
+    mol1 : Chem.Mol
+        The first molecule object to be connected. This should be an RDKit molecule.
+    mol2 : Chem.Mol
+        The second molecule object to be connected. This should be an RDKit molecule.
+    chosen_pair1 : tuple
+        A tuple of two integers representing the indices of carbon atoms in `mol1` where the methane groups will be attached.
+    chosen_pair2 : tuple
+        A tuple of two integers representing the indices of carbon atoms in `mol2` where the methane groups will be attached.
 
     Returns
     -------
-    RDKit Mol
-        A new RDKit Mol object that represents the connected molecule structure.
+    Chem.Mol
+        A new RDKit Mol object representing the connected molecule structure. This molecule contains the two original 
+        molecules with the addition of two methane groups at the specified positions.
+
+    Example
+    -------
+    >>> mol1 = Chem.MolFromSmiles('CCO')
+    >>> mol2 = Chem.MolFromSmiles('CC')
+    >>> chosen_pair1 = (0, 1)
+    >>> chosen_pair2 = (0, 1)
+    >>> new_mol = _connect_ring_C(mol1, mol2, chosen_pair1, chosen_pair2)
+    
+    Notes
+    -----
+    - This function uses RDKit's `CombineMols` to combine the two molecules and add the methane groups.
+    - The `chosen_pair1` and `chosen_pair2` should correspond to valid carbon atom indices in `mol1` and `mol2`.
+    - The new molecule is sanitized after the connection to ensure validity.
     """
     methane1 = Chem.MolFromSmiles('C')
     methane2 = Chem.MolFromSmiles('C')
@@ -964,21 +1433,43 @@ def _connect_ring_C(mol1, mol2, chosen_pair1, chosen_pair2):
 
     return final_connected_mol
 
-def _find_index_pairs(carbons, mol):
+def _find_index_pairs(carbons: list, mol: Chem.Mol) -> list:
     """
-    Finds index pairs of carbon atoms within a molecule for connection.
+    Finds index pairs of carbon atoms within a molecule that are suitable for connection.
+
+    This function takes a list of carbon atom indices and identifies pairs of carbon atoms 
+    within the molecule that are neighbors. The index pairs are returned in a list of tuples, 
+    where each tuple represents a unique pair of carbon atoms.
 
     Parameters
     ----------
     carbons : list of int
-        A list containing indices of carbon atoms within the molecule that are suitable for connection.
-    mol : RDKit Mol object
-        The molecule in which the carbon atoms are located.
+        A list containing indices of carbon atoms within the molecule that are suitable for connection. 
+        These indices should correspond to atoms in the `mol` molecule.
+    mol : Chem.Mol
+        The RDKit Mol object representing the molecule in which the carbon atoms are located. 
 
     Returns
     -------
     list of tuples
-        A list where each tuple contains two indices representing a pair of carbon atoms.
+        A list of tuples where each tuple contains two integers. Each integer represents an index of a 
+        carbon atom that is connected to another carbon atom in the molecule. The indices are zero-based and 
+        correspond to the order in which atoms appear in the RDKit molecule object. 
+
+    Example
+    -------
+    >>> carbons = [0, 2, 4]
+    >>> mol = Chem.MolFromSmiles('CCOCC')
+    >>> index_pairs = _find_index_pairs(carbons, mol)
+    >>> print(index_pairs)
+    [(0, 2), (2, 4)]
+    
+    Notes
+    -----
+    - This function ensures that each pair of carbon atoms is returned only once, 
+      i.e., it avoids returning the same pair in reverse order (e.g., (0, 2) and (2, 0)).
+    - The function assumes that the list `carbons` only contains valid indices that refer to carbon atoms 
+      within the provided molecule.
     """
     index_pairs = []
     for idx in carbons:
@@ -990,28 +1481,47 @@ def _find_index_pairs(carbons, mol):
                     index_pairs.append((idx, neighbor_idx))
     return index_pairs
 
-
-def connect_rings(molecules_tuple_list):
+def connect_rings(molecules_tuple_list: list) -> str:
     """
     Connects two rings from a list of molecule tuples by adding two methane groups between them.
+
+    This function takes a list of molecule tuples, where each tuple contains a SMILES string 
+    representing a molecule and a list of indices of carbon atoms that can be used for connection.
+    It selects one pair of carbon atoms from each molecule and connects them by adding two methane 
+    groups at the chosen positions. The final connected molecule is then returned as a SMILES string.
 
     Parameters
     ----------
     molecules_tuple_list : list of tuples
-        A list where each tuple contains a SMILES string of a molecule and a list of carbon atom indices.
+        A list where each tuple contains:
+        - A SMILES string representing a molecule.
+        - A list of integers, where each integer is an index of a carbon atom that is available for connection.
 
     Returns
     -------
-    SMILES
-        A new SMILES string that represents the connected molecule structure.
+    str
+        A new SMILES string representing the connected molecule structure. If the input list is invalid (less than 2 molecules),
+        an error message is returned instead.
+
+    Example
+    -------
+    >>> molecules = [('C1CCCC1', [0, 1, 2, 3, 4]), ('C1CCCCC1', [0, 1, 2, 3, 4, 5])]
+    >>> connect_rings(molecules)
+    'CC1CC(C)C(C)C1'
+
+    Notes
+    -----
+    - The function selects a pair of carbon atoms from each molecule and connects them by adding two methane groups between them.
+    - The function relies on the `_find_index_pairs` and `_connect_ring_C` functions for finding suitable carbon pairs and connecting the molecules.
+    - If there is less than two molecules in the input list, an appropriate message is returned.
     """
     if len(molecules_tuple_list) < 2:
-        # 如果列表中只有一个元组，直接返回该元组中的SMILES字符串
+        # If there is only one tuple in the list, return the SMILES string of that tuple
         if len(molecules_tuple_list) == 1:
             return molecules_tuple_list[0][0]
-        # 如果列表为空或不足，打印出问题的输入
+        # If the list is empty or contains fewer than 2 molecules, return an error message
         print(f"Invalid input: {molecules_tuple_list}")
-        return "Invalid input. The list must contain at least one molecule."
+        return "Invalid input. The list must contain at least two molecules."
 
     smiles1, carbons1 = molecules_tuple_list[0]
     smiles2, carbons2 = molecules_tuple_list[1]
@@ -1025,62 +1535,108 @@ def connect_rings(molecules_tuple_list):
     chosen_pair1 = random.choice(index_pairs_carbons1)
     chosen_pair2 = random.choice(index_pairs_carbons2)
 
-    # Call the new function to connect the molecules with methane
+    # Call the helper function to connect the molecules with methane
     final_connected_mol = _connect_ring_C(mol1, mol2, chosen_pair1, chosen_pair2)
 
     final_connected_smiles = Chem.MolToSmiles(final_connected_mol)
     return final_connected_smiles
 
-
-def count_hydroxy_oxygen(smiles_list):
+def connect_rings(molecules_tuple_list: list) -> str:
     """
-    Counts the total number of hydroxy oxygen and sulfur atoms in a list of molecules represented by SMILES strings.
+    Connects two rings from a list of molecule tuples by adding two methane groups between them.
 
-    A hydroxy oxygen or sulfur atom is defined as an oxygen or sulfur atom that is bonded to at least one hydrogen atom, 
-    indicative of alcohol, phenol, or thiol groups.
+    This function takes a list of molecule tuples, where each tuple contains a SMILES string 
+    representing a molecule and a list of indices of carbon atoms that can be used for connection.
+    It selects one pair of carbon atoms from each molecule and connects them by adding two methane 
+    groups at the chosen positions. The final connected molecule is then returned as a SMILES string.
 
     Parameters
     ----------
-    smiles_list : list of str
-        A list containing SMILES strings of the molecules to analyze.
+    molecules_tuple_list : list of tuples
+        A list where each tuple contains:
+        - A SMILES string representing a molecule.
+        - A list of integers, where each integer is an index of a carbon atom that is available for connection.
 
     Returns
     -------
-    total_count : int
-                  The total count of hydroxy oxygen and sulfur atoms across all molecules in the given list.
+    str
+        A new SMILES string representing the connected molecule structure. If the input list is invalid (less than 2 molecules),
+        an error message is returned instead.
+
+    Example
+    -------
+    >>> molecules = [('C1CCCC1', [0, 1, 2, 3, 4]), ('C1CCCCC1', [0, 1, 2, 3, 4, 5])]
+    >>> connect_rings(molecules)
+    'CC1CC(C)C(C)C1'
+
+    Notes
+    -----
+    - The function selects a pair of carbon atoms from each molecule and connects them by adding two methane groups between them.
+    - The function relies on the `_find_index_pairs` and `_connect_ring_C` functions for finding suitable carbon pairs and connecting the molecules.
+    - If there is less than two molecules in the input list, an appropriate message is returned.
     """
-    total_count = 0
-    for smiles in smiles_list:
-        mol = Chem.MolFromSmiles(smiles)
-        mol_with_hs = AddHs(mol)  # Explicitly add hydrogens to the molecule.
+    if len(molecules_tuple_list) < 2:
+        # If there is only one tuple in the list, return the SMILES string of that tuple
+        if len(molecules_tuple_list) == 1:
+            return molecules_tuple_list[0][0]
+        # If the list is empty or contains fewer than 2 molecules, return an error message
+        print(f"Invalid input: {molecules_tuple_list}")
+        return "Invalid input. The list must contain at least two molecules."
 
-        hydroxy_atoms = []
-        for atom in mol_with_hs.GetAtoms():
-            if atom.GetSymbol() in ['O', 'S']:  # Check for oxygen and sulfur atoms.
-                neighbors = atom.GetNeighbors()
-                has_hydrogen = False
-                for neighbor in neighbors:
-                    if neighbor.GetSymbol() == 'H':
-                        has_hydrogen = True
-                        break
-                if has_hydrogen:
-                    hydroxy_atoms.append(atom.GetIdx())  # Append index of hydroxy oxygen or sulfur atoms.
-        total_count += len(hydroxy_atoms)
-    return total_count
+    smiles1, carbons1 = molecules_tuple_list[0]
+    smiles2, carbons2 = molecules_tuple_list[1]
 
-def count_ketone_carbons(smiles_list):
+    mol1 = Chem.MolFromSmiles(smiles1)
+    mol2 = Chem.MolFromSmiles(smiles2)
+
+    index_pairs_carbons1 = _find_index_pairs(carbons1, mol1)
+    index_pairs_carbons2 = _find_index_pairs(carbons2, mol2)
+
+    chosen_pair1 = random.choice(index_pairs_carbons1)
+    chosen_pair2 = random.choice(index_pairs_carbons2)
+
+    # Call the helper function to connect the molecules with methane
+    final_connected_mol = _connect_ring_C(mol1, mol2, chosen_pair1, chosen_pair2)
+
+    final_connected_smiles = Chem.MolToSmiles(final_connected_mol)
+    return final_connected_smiles
+
+def count_ketone_carbons(smiles_list: list) -> int:
     """
     Counts the total number of ketone carbon atoms in a list of molecules represented by SMILES strings.
 
+    A ketone carbon atom is defined as a carbon atom that is double-bonded to an oxygen atom and is not part of an aldehyde or carboxyl group.
+
+    This function iterates over the provided list of SMILES strings, converts each molecule to an RDKit molecule object, 
+    adds explicit hydrogen atoms to the molecule structure (if not already present), and identifies carbon atoms that are 
+    part of ketone functional groups. The total count of such carbon atoms is returned.
+
     Parameters
     ----------
     smiles_list : list of str
-        A list containing SMILES strings of the molecules to analyze.
+        A list containing SMILES strings of the molecules to analyze. Each string represents a molecule.
 
     Returns
     -------
     total_count : int
-                  The total count of ketone carbon atoms across all molecules in the given list.
+        The total count of ketone carbon atoms across all molecules in the given list. 
+        A ketone carbon is a carbon atom double-bonded to an oxygen atom.
+
+    Example
+    -------
+    >>> smiles = ['CC(=O)C', 'C1CC(=O)C1', 'CC(C(=O)C)C']
+    >>> count_ketone_carbons(smiles)
+    3
+
+    Notes
+    -----
+    - The function uses RDKit to parse the SMILES strings and explicitly adds hydrogen atoms to the molecule to ensure 
+      the bonds are correctly interpreted.
+    - Ketone carbons are identified based on the presence of a double bond between a carbon atom and an oxygen atom.
+    - This function does not distinguish between ketones and other carbonyl compounds (such as aldehydes or carboxylic acids) 
+      because it looks for a carbon double-bonded to an oxygen atom without further specificity.
+    - This function is useful for counting ketone functional groups in molecules.
+
     """
     total_count = 0
     for smiles in smiles_list:
@@ -1102,19 +1658,44 @@ def count_ketone_carbons(smiles_list):
         total_count += len(ketone_carbons)
     return total_count
 
-def find_C4_carbons(smiles):
+def find_C4_carbons(smiles: str) -> list:
     """
-    Identifies carbon atoms in a molecule that are bonded to exactly two carbon or nitrogen atoms and have one or two hydrogen atoms.
+    Identifies carbon atoms in a molecule that are bonded to exactly two carbon or nitrogen atoms 
+    and have one or two hydrogen atoms.
+
+    The function iterates over the atoms in the molecule, checks if a carbon atom meets the bonding 
+    criteria (bonded to two carbon or nitrogen atoms and one or two hydrogen atoms), and returns 
+    a list of the indices of such carbon atoms.
 
     Parameters
     ----------
     smiles : str
-        A SMILES string representing the molecular structure to be analyzed.
+        A SMILES string representing the molecular structure to be analyzed. 
+        The string encodes the connectivity of atoms and bonds within the molecule.
 
     Returns
     -------
     list
-        A list of indices corresponding to carbon atoms that meet the specified bonding criteria within the molecule. Atom indices are zero-based, matching the order in which atoms appear in the RDKit molecule object.
+        A list of indices corresponding to carbon atoms that meet the specified bonding criteria 
+        within the molecule. Atom indices are zero-based, corresponding to the order in which atoms 
+        appear in the RDKit molecule object.
+
+    Example
+    -------
+    >>> smiles = 'CC(C)C'
+    >>> find_C4_carbons(smiles)
+    [1, 2]
+
+    Notes
+    -----
+    - The function uses RDKit to convert the SMILES string into a molecule object and explicitly 
+      adds hydrogen atoms to ensure accurate bond interpretation.
+    - The criteria for selecting carbon atoms are:
+        1. The atom must be bonded to exactly two carbon or nitrogen atoms.
+        2. The atom must have one or two hydrogen atoms bonded to it.
+    - This function is useful for identifying specific carbon atoms that fit certain structural 
+      patterns, such as those in substituted hydrocarbons or nitrogen-containing compounds.
+
     """
     molecule = Chem.AddHs(Chem.MolFromSmiles(smiles))  # Convert SMILES to molecule and explicitly add hydrogens.
 
@@ -1137,24 +1718,50 @@ def find_C4_carbons(smiles):
 
     return required_carbons  # Return the list of indices of carbon atoms meeting the criteria.
 
-def connect_rings_C4(smiles1):
+def connect_rings_C4(smiles1: str) -> str:
     """
     Connects a given molecule with a butane molecule at specified carbon atom positions.
-    
+
+    This function finds carbon atoms in the input molecule (represented by its SMILES string) 
+    that meet the criteria for connecting to a butane molecule at its terminal carbons. 
+    If suitable carbon atoms are found, the butane molecule is connected, and the resulting 
+    molecule is returned as a SMILES string. If no suitable carbon atoms are found, 
+    it returns None.
+
     Parameters
     ----------
     smiles1 : str
-        A SMILES string representing the initial molecule to which butane will be connected.
+        A SMILES string representing the initial molecule to which butane will be connected. 
+        The function will attempt to identify specific carbon atoms in this molecule for the connection.
 
     Returns
     -------
     str or None
-        A SMILES string representing the modified molecule after connection with butane. 
+        A SMILES string representing the modified molecule after connecting with butane. 
         If no suitable carbon atoms are found for the connection, returns None.
-    """
-    smiles2 = 'CCCC'
-    carbons2 = [0, 3]  # Butane's terminal carbon indices, not used directly but illustrative for extension purposes
 
+    Example
+    -------
+    >>> smiles1 = 'CC(C)C'
+    >>> connect_rings_C4(smiles1)
+    'CC(C)CCCC'  # Example output, depending on the initial molecule
+
+    Notes
+    -----
+    - The function uses the `find_C4_carbons` function to identify potential carbon atoms in the 
+      input molecule that are suitable for bonding with butane. These atoms must meet specific 
+      bonding criteria (bonded to two carbons or nitrogens and one or two hydrogens).
+    - The function attempts to connect the molecule to butane (a four-carbon chain, SMILES: 'CCCC').
+    - The connection is made by bonding the terminal carbons of butane to two carbon atoms from 
+      the original molecule.
+    - If no suitable pair of carbon atoms for bonding is found, the function prints a message 
+      and returns None.
+    - The function utilizes RDKit to perform molecule manipulation and bonding.
+    """
+    smiles2 = 'CCCC'  # SMILES representation of butane
+    carbons2 = [0, 3]  # Butane's terminal carbon indices (illustrative, not used directly)
+
+    # Find suitable C4 carbons in the first molecule
     carbons1 = find_C4_carbons(smiles1)
 
     if not carbons1:
@@ -1171,42 +1778,64 @@ def connect_rings_C4(smiles1):
         print(f"No suitable pair of carbon atoms found in the molecule: {smiles1}")
         return None
 
+    # Randomly choose a pair of carbon atoms to connect with butane
     chosen_pair1 = random.choice(index_pairs_carbons1)
 
+    # Combine the two molecules: the initial molecule and butane
     combined = Chem.CombineMols(mol1, mol2)
     edit_combined = Chem.EditableMol(combined)
 
-    # Recalculate indices in the combined molecule
+    # Recalculate the atom indices in the combined molecule
     index1, index2 = chosen_pair1  # Indices for carbons in mol1
-    index3 = len(mol1.GetAtoms())  # Index for the first atom of mol2 in the combined molecule
-    index4 = len(mol1.GetAtoms()) + 3  # Index for the last atom of mol2 in the combined molecule
+    index3 = len(mol1.GetAtoms())  # Index for the first atom of mol2 (butane)
+    index4 = len(mol1.GetAtoms()) + 3  # Index for the last atom of mol2 (butane)
 
-    # Add bonds between the selected carbons and butane's terminal carbons
+    # Add bonds between the selected carbons from mol1 and butane's terminal carbons
     edit_combined.AddBond(index1, index3, order=BondType.SINGLE)
     edit_combined.AddBond(index2, index4, order=BondType.SINGLE)
 
+    # Get the final connected molecule and sanitize it
     connected_mol = edit_combined.GetMol()
     Chem.SanitizeMol(connected_mol)
 
+    # Return the SMILES string of the connected molecule
     return Chem.MolToSmiles(connected_mol)
 
-def repeat_connect_rings_C4(smiles, num_repeats):
+def repeat_connect_rings_C4(smiles: str, num_repeats: int) -> str:
     """
     Iteratively connects a butane molecule to the given molecule a specified number of times.
-    
+
+    This function uses the `connect_rings_C4` function to iteratively connect a butane molecule 
+    to the provided molecule. The connection is repeated for the given number of times, or until 
+    no suitable carbon atoms for connection are found.
+
     Parameters
     ----------
     smiles : str
-        A SMILES string representing the initial molecule to be modified.
+        A SMILES string representing the initial molecule to be modified. The function will attempt 
+        to connect butane molecules to it in the specified number of iterations.
+
     num_repeats : int
-        The number of times the butane molecule should be connected to the initial molecule.
-        
+        The number of times the butane molecule should be connected to the initial molecule. 
+        Each iteration will attempt to connect another butane molecule.
+
     Returns
     -------
     str
-        The SMILES string representing the modified molecule after all connections have been made.
-        If at any point the connection cannot be made (e.g., no suitable carbons are found), the function
-        returns the most recent successful modification or the original molecule if none were made.
+        The SMILES string representing the modified molecule after all connections have been made. 
+        If at any point the connection cannot be made (e.g., no suitable carbons are found), the function 
+        returns the most recent successful modification or the original molecule if no modifications were made.
+
+    Example
+    -------
+    >>> repeat_connect_rings_C4("CC(C)C", 3)
+    'CC(C)CCCCCCCCCCCC'  # Example output after 3 iterations of connecting butane.
+
+    Notes
+    -----
+    - The function makes use of `connect_rings_C4` to handle the actual connection of butane molecules.
+    - If no suitable carbon atoms for bonding are found in any iteration, the function terminates early.
+    - The molecule is modified by repeatedly connecting butane molecules, and the result is returned as a SMILES string.
     """
     for _ in range(num_repeats):
         new_smiles = connect_rings_C4(smiles)
@@ -1215,19 +1844,42 @@ def repeat_connect_rings_C4(smiles, num_repeats):
         smiles = new_smiles
     return smiles
 
-def process_smiles(smiles_list):
+def process_smiles(smiles_list: list) -> list:
     """
     Sorts a list of SMILES strings in a zigzag pattern based on the sum of atomic numbers in each molecule.
+
+    This function sorts a list of SMILES strings by the sum of the atomic numbers of the atoms in the molecule.
+    The sorted list is then arranged in a zigzag pattern: the highest sum atomic number is placed at the first 
+    position, the second highest at the second position, and so on, alternating between the highest and lowest 
+    sums.
 
     Parameters
     ----------
     smiles_list : list of str
-        A list containing SMILES strings of the molecules to analyze.
+        A list containing SMILES strings of the molecules to analyze. The molecules will be sorted 
+        based on the sum of atomic numbers of their constituent atoms.
 
     Returns
     -------
     list of str
-        The list of SMILES strings sorted in a zigzag pattern based on their molecular weight.
+        A list of SMILES strings sorted in a zigzag pattern based on the sum of atomic numbers 
+        in each molecule. The list is arranged such that the highest sums are placed at even indices and 
+        the lowest sums at odd indices.
+
+    Example
+    -------
+    >>> smiles_list = ['CCO', 'CC(C)C', 'CCCC']
+    >>> process_smiles(smiles_list)
+    ['CC(C)C', 'CCCC', 'CCO']  # Example output showing zigzag sorted order
+
+    Notes
+    -----
+    - The sum of atomic numbers is calculated for each molecule by summing the atomic numbers of all atoms 
+      in the molecule.
+    - The zigzag pattern alternates between the highest and lowest sums, placing the highest sums in even positions 
+      (0-based index) and the lowest sums in odd positions.
+    - The sorting ensures that the list is not simply sorted by atomic number sums in ascending or descending order, 
+      but rather in a unique "zigzag" pattern.
     """
     # Inline function to count atomic numbers in a molecule
     def count_atoms_inline(smiles):
@@ -1252,20 +1904,38 @@ def process_smiles(smiles_list):
     
     return result
 
-def find_aldehyde_carbons(mol):
+def find_aldehyde_carbons(mol: rdchem.Mol) -> list:
     """
     Identifies aldehyde carbon atoms within a given molecule.
+
+    An aldehyde group consists of a carbonyl group (C=O) where the carbon is bonded to a hydrogen atom (–CHO).
+    This function checks for carbon atoms that are part of such a group by looking for a carbon 
+    bonded to one oxygen atom with a double bond and one hydrogen atom.
 
     Parameters
     ----------
     mol : rdkit.Chem.Mol
-        The RDKit molecule object to be analyzed.
+        The RDKit molecule object to be analyzed. This molecule will be checked for aldehyde groups.
 
     Returns
     -------
     aldehyde_carbons : list
         A list of indices corresponding to carbon atoms that are part of an aldehyde group within the molecule.
         Atom indices are zero-based, matching the order in which atoms appear in the RDKit molecule object.
+        If no aldehyde groups are found, the list will be empty.
+
+    Example
+    -------
+    >>> mol = Chem.MolFromSmiles("CC(C)C=O")
+    >>> find_aldehyde_carbons(mol)
+    [4]  # The carbon in the aldehyde group is at index 4.
+
+    Notes
+    -----
+    - The function explicitly adds hydrogen atoms to the molecule for more accurate analysis of aldehyde groups.
+    - The function checks for a carbon atom bonded to one oxygen atom (double bond) and one hydrogen atom, 
+      indicative of an aldehyde group.
+    - Only carbon atoms that meet these criteria are included in the result list.
     """
     mol_with_hs = Chem.AddHs(mol)  # Explicitly add all hydrogens to the molecule for accurate analysis
 
@@ -1284,20 +1954,37 @@ def find_aldehyde_carbons(mol):
 
     return aldehyde_carbons
 
-def find_hydroxy_oxygen(mol):
+def find_hydroxy_oxygen(mol: rdchem.Mol) -> list:
     """
     Identifies the indices of hydroxy oxygen and sulfur atoms in a given RDKit molecule object.
+
+    Hydroxy oxygen atoms are defined as oxygen atoms bonded to at least one hydrogen atom (–OH), 
+    and sulfur atoms are defined as sulfur atoms bonded to at least one hydrogen atom (–SH), indicating 
+    the presence of alcohol or thiol groups.
 
     Parameters
     ----------
     mol : rdkit.Chem.Mol
-        An RDKit molecule object to be analyzed.
+        An RDKit molecule object to be analyzed. This molecule will be checked for hydroxy oxygen and sulfur atoms.
 
     Returns
     -------
     hydroxy_atoms : list
         A list of indices for oxygen and sulfur atoms bonded to at least one hydrogen atom,
-        indicating the presence of hydroxy or thiol groups respectively.
+        indicating the presence of hydroxy or thiol groups respectively. 
+        Atom indices are zero-based, matching the order in which atoms appear in the RDKit molecule object.
+        If no hydroxy or thiol atoms are found, the list will be empty.
+
+    Example
+    -------
+    >>> mol = Chem.MolFromSmiles("CC(C)O")
+    >>> find_hydroxy_oxygen(mol)
+    [4]  # The oxygen atom in the hydroxy group is at index 4.
+
+    Notes
+    -----
+    - The function explicitly adds hydrogen atoms to the molecule for more accurate analysis of hydroxy and thiol groups.
+    - Only oxygen and sulfur atoms that are bonded to at least one hydrogen atom are included in the result list.
     """
     mol_with_hs = AddHs(mol)  # Add explicit hydrogens to the molecule for accurate analysis.
 
@@ -1311,20 +1998,38 @@ def find_hydroxy_oxygen(mol):
 
     return hydroxy_atoms
 
-def find_ketone_alpha_carbons(mol):
+def find_ketone_alpha_carbons(mol: rdchem.Mol) -> list:
     """
     Identifies alpha carbon atoms adjacent to carbonyl carbons in ketones within a given molecule.
 
+    Alpha carbon atoms are defined as those that are adjacent to the carbonyl group (C=O) in ketones.
+    These are typically the carbons bonded to the carbonyl carbon but not directly bonded to the oxygen atom.
+
     Parameters
     ----------
-    mol : RDKit Mol
-        An RDKit molecule object.
+    mol : rdkit.Chem.Mol
+        An RDKit molecule object representing the molecule to be analyzed.
 
     Returns
     -------
     ketone_alpha_carbons : list
-        A list of indices for alpha carbon atoms adjacent to carbonyl carbons in ketones.
-   """
+        A list of indices for alpha carbon atoms that are adjacent to carbonyl carbons in ketones.
+        The atom indices are zero-based, corresponding to the order in which atoms appear in the RDKit molecule object.
+        If no alpha carbons are found, the list will be empty.
+
+    Example
+    -------
+    >>> mol = Chem.MolFromSmiles("CC(=O)C")
+    >>> find_ketone_alpha_carbons(mol)
+    [1]  # The alpha carbon adjacent to the carbonyl group at index 1.
+
+    Notes
+    -----
+    - This function identifies ketones by finding oxygen atoms bonded to a carbonyl carbon.
+    - It assumes that the carbonyl group has a double bond between the oxygen and carbon.
+    - The alpha carbon is defined as a carbon atom bonded to the carbonyl carbon but not to the oxygen atom.
+
+    """
     ketone_alpha_carbons = []
 
     for atom in mol.GetAtoms():
@@ -1343,19 +2048,38 @@ def find_ketone_alpha_carbons(mol):
 
     return ketone_alpha_carbons
 
-def find_alpha_carbons(mol):
+def find_alpha_carbons(mol: rdchem.Mol) -> list:
     """
     Identifies indices of non-aromatic alpha carbon atoms that are directly bonded to aromatic carbon atoms.
 
+    Alpha carbon atoms are defined as carbon atoms that are directly bonded to an aromatic carbon atom, 
+    but are themselves not aromatic. These are typically carbons attached to aromatic rings in compounds 
+    like aryl groups attached to alkyl chains.
+
     Parameters
     ----------
-    mol : RDKit Mol
-        An RDKit molecule object to be analyzed.
+    mol : rdkit.Chem.Mol
+        An RDKit molecule object representing the molecule to be analyzed.
 
     Returns
     -------
-    list(alpha_carbons) : list
-        A list of unique indices for non-aromatic alpha carbon atoms directly bonded to aromatic carbon atoms.
+    list
+        A list of unique indices for non-aromatic alpha carbon atoms that are directly bonded to aromatic carbon atoms.
+        Atom indices are zero-based, corresponding to the order in which atoms appear in the RDKit molecule object.
+        If no such alpha carbons are found, the list will be empty.
+
+    Example
+    -------
+    >>> mol = Chem.MolFromSmiles("CC1=CC=CC=C1")
+    >>> find_alpha_carbons(mol)
+    [0, 3]  # The alpha carbons bonded to the aromatic ring at indices 0 and 3.
+
+    Notes
+    -----
+    - This function identifies non-aromatic carbons bonded to aromatic carbons in molecules with aromatic rings.
+    - The search excludes aromatic carbons, focusing only on non-aromatic carbons.
+    - The set data structure is used to avoid duplicate indices for alpha carbons.
+
     """
     alpha_carbons = set()  # Use a set to avoid duplicate indices
 
@@ -1367,19 +2091,37 @@ def find_alpha_carbons(mol):
 
     return list(alpha_carbons)  # Convert back to list for consistency with expected return type
 
-def find_aliphatic_carbons(mol):
+def find_aliphatic_carbons(mol: rdchem.Mol) -> list:
     """
     Identifies indices of aliphatic (non-aromatic) carbon atoms within a given molecule.
 
+    Aliphatic carbon atoms are defined as carbon atoms that are not part of an aromatic ring. These include 
+    carbon atoms in chains, branches, or rings that are not aromatic.
+
     Parameters
     ----------
-    mol : RDKit Mol
-        An RDKit molecule object to be analyzed.
+    mol : rdkit.Chem.Mol
+        An RDKit molecule object representing the molecule to be analyzed.
 
     Returns
     -------
-    aliphatic_carbons : list
+    list
         A list of indices corresponding to aliphatic carbon atoms in the molecule.
+        Atom indices are zero-based, corresponding to the order in which atoms appear in the RDKit molecule object.
+        If no aliphatic carbon atoms are found, the list will be empty.
+
+    Example
+    -------
+    >>> mol = Chem.MolFromSmiles("CC1=CC=CC=C1")
+    >>> find_aliphatic_carbons(mol)
+    [0, 1, 2, 3]  # The aliphatic carbons are the ones in the alkyl chain attached to the aromatic ring.
+
+    Notes
+    -----
+    - This function identifies carbon atoms that are not part of any aromatic ring in the molecule.
+    - Aliphatic carbons can be in straight chains, branched chains, or non-aromatic rings.
+    - Aromatic carbons, which are part of rings with alternating single and double bonds (like benzene), are excluded.
+
     """
     aliphatic_carbons = []
     for atom in mol.GetAtoms():
@@ -1388,19 +2130,37 @@ def find_aliphatic_carbons(mol):
 
     return aliphatic_carbons
 
-def find_benzene_carbons(mol):
+def find_benzene_carbons(mol: rdchem.Mol) -> list:
     """
     Identifies indices of carbon atoms that are part of benzene rings in a given molecule.
 
+    Benzene rings are identified based on the presence of six carbon atoms that are part of an aromatic system,
+    where the carbon atoms are involved in alternating single and double bonds.
+
     Parameters
     ----------
-    mol : RDKit Mol
-        An RDKit molecule object to be analyzed.
+    mol : rdkit.Chem.Mol
+        An RDKit molecule object representing the molecule to be analyzed.
 
     Returns
     -------
     list
-        A list of indices corresponding to carbon atoms that are part of benzene rings.
+        A list of indices corresponding to carbon atoms that are part of benzene rings in the molecule.
+        The indices are zero-based, corresponding to the order in which atoms appear in the RDKit molecule object.
+        If no benzene rings are found, the list will be empty.
+
+    Example
+    -------
+    >>> mol = Chem.MolFromSmiles("C1=CC=CC=C1")
+    >>> find_benzene_carbons(mol)
+    [0, 1, 2, 3, 4, 5]  # The carbon atoms in the benzene ring.
+
+    Notes
+    -----
+    - Benzene rings are detected by finding rings with exactly six carbon atoms that are aromatic.
+    - The function returns a list of indices for the carbon atoms in the benzene ring, excluding other atoms or rings.
+    - The output list may contain duplicates if the molecule contains multiple benzene rings, which are then removed by converting the list to a set.
+
     """
     benzene_carbons = []
     ri = mol.GetRingInfo()
@@ -1413,19 +2173,36 @@ def find_benzene_carbons(mol):
 
     return list(set(benzene_carbons))  # Remove duplicates and return the list
 
-def find_ban_carbons(mol):
+def find_ban_carbons(mol: rdchem.Mol) -> list:
     """
-    Identifies carbon atoms bonded to exactly two hydrogen atoms and not connected to any other carbons from the list.
+    Identifies carbon atoms bonded to exactly two hydrogen atoms and not connected to any other carbons.
+
+    This function is designed to find carbon atoms in a molecule that are bonded to exactly two hydrogen atoms 
+    and are not bonded to other carbon atoms (i.e., the carbon is isolated or terminal, not part of a longer chain).
 
     Parameters
     ----------
-    mol : RDKit Mol
-        An RDKit molecule object before adding explicit hydrogens.
+    mol : rdkit.Chem.Mol
+        An RDKit molecule object representing the molecule to be analyzed, before adding explicit hydrogens.
 
     Returns
     -------
-    single_linked_carbons : list
-                            A list of indices for carbon atoms that meet the criteria.
+    list
+        A list of indices corresponding to carbon atoms that meet the criteria:
+        - Bonded to exactly two hydrogen atoms.
+        - Not connected to any other carbon atoms.
+
+    Example
+    -------
+    >>> mol = Chem.MolFromSmiles("CH3CH2OH")
+    >>> find_ban_carbons(mol)
+    [0, 3]  # For a molecule like ethanol, the carbon atoms bonded to two hydrogens are indexed.
+
+    Notes
+    -----
+    - This function first adds explicit hydrogens to the molecule to ensure the number of hydrogen atoms can be counted accurately.
+    - It considers only carbon atoms that are bonded to exactly two hydrogens and are not connected to other carbons, excluding carbon-carbon bonds.
+
     """
     # Explicitly add hydrogens to the molecule for accurate processing
     mol_with_hs = AddHs(mol)
@@ -1442,7 +2219,7 @@ def find_ban_carbons(mol):
         for idx in carbon_atoms_with_two_hydrogen
     }
 
-    # Find carbon atoms only connected to hydrogen atoms (excluding those connected to other carbons in the list)
+    # Find carbon atoms only connected to hydrogen atoms (excluding those connected to other carbons)
     single_linked_carbons = [
         idx for idx, neighbors in neighbor_atoms.items()
         if not any(neighbor in carbon_atoms_with_two_hydrogen for neighbor in neighbors)
@@ -1450,12 +2227,28 @@ def find_ban_carbons(mol):
     
     return single_linked_carbons
 
-def connect_molecules(smiles1, smiles2):
+def connect_molecules(smiles1: str, smiles2: str) -> str:
+    """
+    Connects two molecules at suitable bonding positions, based on various functional groups.
+
+    Parameters
+    ----------
+    smiles1 : str
+        The SMILES string representing the first molecule.
+    smiles2 : str
+        The SMILES string representing the second molecule to be connected.
+
+    Returns
+    -------
+    str
+        The SMILES string representing the combined molecule if a valid connection is made,
+        or None if no valid connection can be found.
+    """
     mol1 = Chem.MolFromSmiles(smiles1)
     mol2 = Chem.MolFromSmiles(smiles2)
     
     # Define lists of functions to identify suitable connection points on each molecule
-    connection_functions1 = [
+    connection_functions1: list = [
         find_aldehyde_carbons,
         find_hydroxy_oxygen,
         find_ketone_alpha_carbons,
@@ -1464,7 +2257,7 @@ def connect_molecules(smiles1, smiles2):
         find_benzene_carbons
     ]
     
-    connection_functions2 = [
+    connection_functions2: list = [
         find_aldehyde_carbons,
         find_hydroxy_oxygen,
         find_ketone_alpha_carbons,
@@ -1472,18 +2265,21 @@ def connect_molecules(smiles1, smiles2):
         find_aliphatic_carbons,
         find_benzene_carbons
     ]
-       
+    
+    # Outer loop to iterate through possible connection points on mol1
     for find_atoms1 in connection_functions1:
         atoms1 = find_atoms1(mol1)
         atoms1 = [idx for idx in atoms1 if len([neighbor for neighbor in mol1.GetAtomWithIdx(idx).GetNeighbors() if neighbor.GetSymbol() != 'H']) < 3]
         atoms1 = [idx for idx in atoms1 if idx not in find_ban_carbons(mol1)]
         
         if atoms1:
+            # Inner loop to iterate through possible connection points on mol2
             for find_atoms2 in connection_functions2:
                 atoms2 = find_atoms2(mol2)
                 atoms2 = [idx for idx in atoms2 if len([neighbor for neighbor in mol2.GetAtomWithIdx(idx).GetNeighbors() if neighbor.GetSymbol() != 'H']) < 3]
                 atoms2 = [idx for idx in atoms2 if idx not in find_ban_carbons(mol2)]
                 
+                # Ensure no connection between two hydroxy groups
                 if atoms2 and not (find_atoms1 == find_hydroxy_oxygen and find_atoms2 == find_hydroxy_oxygen):
                     try:
                         atom1_idx = random.choice(atoms1)
@@ -1501,7 +2297,7 @@ def connect_molecules(smiles1, smiles2):
                     
     return None  # If no valid connection was found
 
-def show_ring_carbon_numbers(smiles):
+def show_ring_carbon_numbers(smiles: str) -> list:
     mol = Chem.MolFromSmiles(smiles)
     mol = Chem.AddHs(mol)
 
@@ -1522,7 +2318,7 @@ def show_ring_carbon_numbers(smiles):
     
     return list(set(selected_ring_carbons))  # Ensure uniqueness and return
 
-def select_carbons_from_different_rings(current_molecule, ring_carbons, n):
+def select_carbons_from_different_rings(current_molecule: str, ring_carbons: list, n: int) -> list:
     """
     Select up to `n` carbon atoms from different rings within the given molecule.
 
@@ -1559,8 +2355,7 @@ def select_carbons_from_different_rings(current_molecule, ring_carbons, n):
     
     return selected_indices
 
-
-def count_atoms(smiles_input):
+def count_atoms(smiles_input: str or list) -> dict:
     """
     Counts the number of each specified element in a single SMILES string or a list of SMILES strings.
     Ensures all expected elements are included in the result dictionary, even if their count is 0.
@@ -1599,7 +2394,7 @@ def count_atoms(smiles_input):
 
     return atom_counts
 
-def balance_c_and_n_atoms(smiles, target_element_counts):
+def balance_c_and_n_atoms(smiles: str, target_element_counts: dict) -> str:
     """
     Modifies a molecule by replacing carbon atoms with nitrogen to meet target element counts,
     while avoiding changes in benzene rings.
@@ -1645,7 +2440,7 @@ def balance_c_and_n_atoms(smiles, target_element_counts):
     new_smiles = Chem.MolToSmiles(new_mol)
     return new_smiles
 
-def find_atom_indices(smiles, atom_symbol):
+def find_atom_indices(smiles: str, atom_symbol: str) -> list:
     """
     Returns the indices of specified atoms in a molecule. For oxygen atoms,
     it specifically returns those bonded to exactly two carbon atoms.
@@ -1679,7 +2474,7 @@ def find_atom_indices(smiles, atom_symbol):
 
     return atom_indices
 
-def balance_o_and_s_atoms(smiles, target_element_counts):
+def balance_o_and_s_atoms(smiles: str, target_element_counts: dict) -> str:
     """
     Modifies a molecule by replacing sulfur atoms with oxygen, or vice versa,
     to meet target element counts for oxygen and sulfur.
@@ -1725,7 +2520,22 @@ def balance_o_and_s_atoms(smiles, target_element_counts):
 
     return Chem.MolToSmiles(molecule, isomericSmiles=True)
 
-def calculate_unsaturated_carbon_ratio(smiles):
+def calculate_unsaturated_carbon_ratio(smiles: str) -> float:
+    """
+    Calculates the ratio of unsaturated carbon atoms (participating in double or triple bonds) 
+    to the total number of carbon atoms in a molecule represented by a SMILES string.
+
+    Parameters
+    ----------
+    smiles : str
+        SMILES representation of the molecule.
+
+    Returns
+    -------
+    float
+        The ratio of unsaturated carbon atoms to total carbon atoms in the molecule.
+        Returns 0 if there are no carbon atoms in the molecule or if the input SMILES is invalid.
+    """
     # 从SMILES字符串创建一个RDKit分子对象
     mol = Chem.MolFromSmiles(smiles)
     
@@ -1759,10 +2569,24 @@ def calculate_unsaturated_carbon_ratio(smiles):
 
 def count_property(smiles_input):
     """
-    Prints the counts of specified elements (C, N, H, S, O) in a single SMILES string or a list of SMILES strings.
+    Counts specified elements and their types (e.g., unsaturated or aliphatic carbons) in one or more SMILES strings.
+    
+    Specifically counts:
+    - 'C_N_ar': Unsaturated carbon or nitrogen atoms (those participating in double or triple bonds).
+    - 'C_al': Aliphatic (single-bonded) carbon atoms.
+    - 'O_S': Oxygen and sulfur atoms.
+    - 'H': Hydrogen atoms.
 
     Parameters
-    - smiles_input: A single SMILES string or a list of SMILES strings representing molecule(s).
+    ----------
+    smiles_input : str or list
+        A single SMILES string or a list of SMILES strings representing one or more molecules.
+
+    Returns
+    -------
+    dict
+        A dictionary with the counts of each property: {'C_N_ar', 'C_al', 'O_S', 'H'}.
+        The counts reflect the number of atoms of each type found in the provided molecule(s).
     """
     property_counts = {'C_N_ar': 0, 'C_al': 0, 'O_S': 0, 'H': 0}
 
@@ -1782,30 +2606,61 @@ def count_property(smiles_input):
 
         for atom in mol_with_hs.GetAtoms():
             if atom.GetSymbol() == 'C' or atom.GetSymbol() == 'N':
+                # Check if the atom is part of an unsaturated structure (double or triple bond)
                 if any(bond.GetBondType() != Chem.BondType.SINGLE for bond in atom.GetBonds()):
-                    property_counts['C_N_ar'] += 1  # Count as unsaturated C (or N) if any bond is not single
+                    property_counts['C_N_ar'] += 1  # Count as unsaturated C (or N)
                 else:
-                    property_counts['C_al'] += 1
+                    property_counts['C_al'] += 1  # Count as aliphatic carbon
             elif atom.GetSymbol() in ['O', 'S']:
-                property_counts['O_S'] += 1
-            if atom.GetSymbol() == 'H':
-                property_counts['H'] += 1
+                property_counts['O_S'] += 1  # Count oxygen and sulfur atoms
+            elif atom.GetSymbol() == 'H':
+                property_counts['H'] += 1  # Count hydrogen atoms
 
     return property_counts
 
-# # 假设 current_smiles_list 已经定义并包含了SMILES字符串
-def drawMolecule(smiles):
-    mol = Chem.MolFromSmiles(smiles, sanitize=False)  # 创建分子时不进行sanitize操作
-    img = Draw.MolToImage(mol, size=(600, 600))
-    img.show()
+def drawMolecule(smiles: str) -> None:
+    """
+    Draws a molecule from a given SMILES string and displays the image.
+    
+    This function uses RDKit to create a molecule object from the provided SMILES string
+    and then generates an image of the molecule, which is displayed using the default image viewer.
 
-def drawMolecules(smiles_list, molsPerRow, maxMols=100):
+    Parameters
+    ----------
+    smiles : str
+        The SMILES string representing the molecule to be drawn.
+
+    Returns
+    -------
+    None
+        This function does not return a value, it directly displays the molecule's image.
+    """
+    mol = Chem.MolFromSmiles(smiles, sanitize=False)  # Create the molecule without sanitization
+    img = Draw.MolToImage(mol, size=(600, 600))  # Generate the image
+    img.show()  # Display the image
+
+def drawMolecules(smiles_list: list[str], molsPerRow: int, maxMols: int = 100) -> list[dict]:
     """
     Draws a grid image of molecules from a list of SMILES strings.
 
+    This function takes a list of SMILES strings, converts them into RDKit molecule objects, and generates a grid image.
+    It also provides a summary of the molecular properties (C, N, O, H counts) for each molecule in the grid.
+
     Parameters
-    - smiles_list: List of SMILES strings representing the molecules to be drawn.
-    - molsPerRow: Number of molecules to display per row in the grid image.
+    ----------
+    smiles_list : list of str
+        A list of SMILES strings representing the molecules to be drawn.
+        
+    molsPerRow : int
+        The number of molecules to display per row in the grid image.
+        
+    maxMols : int, optional, default=100
+        The maximum number of molecules to display in the grid. If more molecules are provided, they will be truncated.
+
+    Returns
+    -------
+    list of dict
+        A list of dictionaries, each containing molecular property counts (C, N, O, H) for each molecule.
     """
     # Convert SMILES strings to RDKit molecule objects and add hydrogens
     molecules = [Chem.MolFromSmiles(smiles) for smiles in smiles_list]
@@ -1820,17 +2675,24 @@ def drawMolecules(smiles_list, molsPerRow, maxMols=100):
     display(img)
     return mol_property
 
-def calculate_mass_percentages(atom_counts):
+def calculate_mass_percentages(atom_counts: dict[str, int]) -> dict[str, float]:
     """
     Calculates the mass percentages of elements based on their counts in a molecule.
 
+    This function uses the atomic masses of carbon, hydrogen, oxygen, nitrogen, and sulfur to compute
+    the mass percentages of each element in the molecule, given the counts of each element.
+
     Parameters
-    - atom_counts (dict): A dictionary with element symbols as keys and their counts as values.
+    ----------
+    atom_counts : dict of {str: int}
+        A dictionary with element symbols as keys (e.g., 'C', 'H', 'O') and their counts in the molecule as values.
 
     Returns
-    - dict: A dictionary with element symbols as keys and their mass percentages as values.
+    -------
+    dict of {str: float}
+        A dictionary with element symbols as keys and their mass percentages as values.
     """
-    # 原子质量参考，单位为原子质量单位 (amu)
+    # Atomic masses in atomic mass units (amu)
     atomic_masses = {
         'C': 12.01,
         'H': 1.008,
@@ -1839,26 +2701,53 @@ def calculate_mass_percentages(atom_counts):
         'S': 32.06
     }
     
-    # 计算每个元素的总质量
+    # Calculate the total mass for each element
     masses = {element: count * atomic_masses[element] for element, count in atom_counts.items()}
     
-    # 计算总质量
+    # Calculate the total mass of the molecule
     total_mass = sum(masses.values())
     
-    # 计算元素的质量百分比
+    # Calculate the mass percentages of each element
     mass_percentages = {element: (mass / total_mass) * 100 for element, mass in masses.items()}
     
     return mass_percentages
 
-def ad2daf(C, N, H, S, M, A):
-    # 第一步：计算AD基准下的O的百分比
+def ad2daf(C: float, N: float, H: float, S: float, M: float, A: float) -> tuple[float, float, float, float, float]:
+    """
+    Converts the element percentages from the AD (as-determined) basis to the DAF (dry, ash-free) basis.
+
+    This function calculates the percentage of each element (C, N, H, S, and O) on the DAF basis,
+    given their values on the AD basis.
+
+    Parameters
+    ----------
+    C : float
+        Carbon percentage in the AD basis.
+    N : float
+        Nitrogen percentage in the AD basis.
+    H : float
+        Hydrogen percentage in the AD basis.
+    S : float
+        Sulfur percentage in the AD basis.
+    M : float
+        Moisture percentage (unused in calculations but might be part of input data).
+    A : float
+        Ash percentage (unused in calculations but might be part of input data).
+
+    Returns
+    -------
+    tuple of float
+        A tuple containing the percentages of Carbon (C), Nitrogen (N), Hydrogen (H), Sulfur (S),
+        and Oxygen (O) on the DAF basis.
+    """
+    # Calculate the oxygen percentage in AD basis
     O = 100 - (C + N + H + S + M + A)
     
-    # 计算AD基准下CNHSO的总和
+    # Calculate the total sum of C, N, H, S, and O on AD basis
     total_CNHSO_ad = C + N + H + S + O
     print('O_ad=', O)
     
-    # 计算daf基准下的CNHSO百分比
+    # Calculate the percentage of each element on DAF basis
     C_daf = C / total_CNHSO_ad * 100
     N_daf = N / total_CNHSO_ad * 100
     H_daf = H / total_CNHSO_ad * 100
@@ -1867,62 +2756,129 @@ def ad2daf(C, N, H, S, M, A):
     
     return C_daf, N_daf, H_daf, S_daf, O_daf
 
-def daf2ad(C_daf, N_daf, H_daf, S_daf, O_daf, M, A):
-    # 从daf到ad的转换系数
+def daf2ad(C_daf: float, N_daf: float, H_daf: float, S_daf: float, O_daf: float, M: float, A: float) -> tuple[float, float, float, float, float]:
+    """
+    Converts the element percentages from the DAF (dry, ash-free) basis to the AD (as-determined) basis.
+
+    This function calculates the percentage of each element (C, N, H, S, and O) on the AD basis,
+    given their values on the DAF basis, and considering moisture and ash content.
+
+    Parameters
+    ----------
+    C_daf : float
+        Carbon percentage in the DAF basis.
+    N_daf : float
+        Nitrogen percentage in the DAF basis.
+    H_daf : float
+        Hydrogen percentage in the DAF basis.
+    S_daf : float
+        Sulfur percentage in the DAF basis.
+    O_daf : float
+        Oxygen percentage in the DAF basis.
+    M : float
+        Moisture percentage.
+    A : float
+        Ash percentage.
+
+    Returns
+    -------
+    tuple of float
+        A tuple containing the percentages of Carbon (C), Nitrogen (N), Hydrogen (H), Sulfur (S),
+        and Oxygen (O) on the AD basis.
+
+    Example
+    -------
+    Given the following input data:
+    
+    C_daf = 83.96
+    N_daf = 3.81
+    H_daf = 3.31
+    S_daf = 0.39
+    O_daf = 8.99
+    M = 2.51  # Moisture
+    A = 1.66  # Ash
+
+    The function is called as:
+
+    C_ad, N_ad, H_ad, S_ad, O_ad = daf2ad(C_daf, N_daf, H_daf, S_daf, O_daf, M, A)
+
+    The output will be:
+
+    ad基准下百分比: C_ad, N_ad, H_ad, S_ad, O_ad
+    CNHSOMA和: C_ad + N_ad + H_ad + S_ad + O_ad + M + A
+    """
+    # Conversion factor for converting from DAF to AD
     conversion_factor = (100 - (M + A)) / 100
     
-    # 计算ad基准下的CNHS
+    # Calculate the element percentages on AD basis
     C_ad = C_daf * conversion_factor
     N_ad = N_daf * conversion_factor
     H_ad = H_daf * conversion_factor
     S_ad = S_daf * conversion_factor
     
-    # 计算ad基准下的CNHS总和
+    # Calculate the total sum of C, N, H, S on AD basis
     total_CNHS_ad = C_ad + N_ad + H_ad + S_ad
     
-    # 计算ad基准下的氧百分比
+    # Calculate oxygen percentage on AD basis
     O_ad = 100 - (total_CNHS_ad + M + A)
     
     return C_ad, N_ad, H_ad, S_ad, O_ad
 
-# # 使用您提供的数据
-# C_daf = 83.96
-# N_daf = 3.81
-# H_daf = 3.31
-# S_daf = 0.39
-# O_daf = 8.99
-# M = 2.51  # 水分
-# A = 1.66  # 灰分
-				
-# # 调用函数
-# C_ad, N_ad, H_ad, S_ad, O_ad = ut.daf2ad(C_daf, N_daf, H_daf, S_daf, O_daf, M, A)
-# print("ad基准下百分比:", C_ad, N_ad, H_ad, S_ad, O_ad)
-# print("CNHSOMA和:", C_ad+N_ad+H_ad+S_ad+O_ad+M+A)
 
+def calculate_MA(C_ad: float, N_ad: float, H_ad: float, S_ad: float, C_daf: float, O_daf: float) -> float:
+    """
+    Calculates the sum of moisture (M) and ash (A) content based on the element percentages 
+    in the AD (as-determined) basis and DAF (dry, ash-free) basis for a given material.
 
-def calculate_MA(C_ad, N_ad, H_ad, S_ad, C_daf, O_daf):
-    # 计算ad基准下CNHS的总和
+    This function computes the total moisture and ash content (M + A) based on the known 
+    values of carbon, nitrogen, hydrogen, sulfur, and oxygen in both AD and DAF forms.
+
+    Parameters
+    ----------
+    C_ad : float
+        Carbon percentage in the AD basis.
+    N_ad : float
+        Nitrogen percentage in the AD basis.
+    H_ad : float
+        Hydrogen percentage in the AD basis.
+    S_ad : float
+        Sulfur percentage in the AD basis.
+    C_daf : float
+        Carbon percentage in the DAF basis.
+    O_daf : float
+        Oxygen percentage in the DAF basis.
+
+    Returns
+    -------
+    float
+        The sum of moisture and ash content (M + A) on the AD basis.
+
+    Example
+    -------
+    Given the following input data:
+
+    C_ad = 80.92
+    N_ad = 3.49   # Nitrogen
+    H_ad = 3.03   # Hydrogen
+    S_ad = 0.38   # Sulfur
+    C_daf = 83.86
+    O_daf = 8.99
+
+    The function is called as:
+
+    MA_sum = calculate_MA(C_ad, N_ad, H_ad, S_ad, C_daf, O_daf)
+
+    The output will be:
+
+    MA_sum: 8.29
+    """
+    # Calculate the total CNHS percentage on the AD basis
     total_CNHS_ad = C_ad + N_ad + H_ad + S_ad
     
-    # 根据比例关系解出O_ad
+    # Calculate O_ad based on the ratio between C_ad and C_daf
     O_ad = (C_ad / C_daf) * O_daf
     
-    # 计算M和A的总和
+    # Calculate the total sum of moisture (M) and ash (A)
     MA_sum = 100 - (total_CNHS_ad + O_ad)
     
-    return  MA_sum
-
-# C_ad = 80.92
-# N_ad = 3.49   # 氮
-# H_ad = 3.03  # 氢
-# S_ad = 0.38  # 硫
-# C_daf = 83.86
-# O_daf = 8.99
-
-# C_ad = 74.37
-# N_ad = 1.21   # 氮
-# H_ad = 5.687  # 氢
-# S_ad = 0.342  # 硫
-# C_daf = 82.44
-# O_daf = 9.53
-# ut.calculate_MA(C_ad, N_ad, H_ad, S_ad, C_daf, O_daf)
+    return MA_sum
