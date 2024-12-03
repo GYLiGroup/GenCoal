@@ -1,5 +1,6 @@
-from typing import Tuple, Dict, List
+from typing import List, Dict, Tuple
 from rdkit import Chem
+from rdkit.Chem import rdchem
 from rdkit.Chem.rdchem import BondType
 from rdkit.Chem import AddHs, Draw, AllChem
 from IPython.display import display
@@ -283,35 +284,6 @@ def build_H_nested_dict(sorted_choices: List[Dict[str, int]]) -> Dict[int, Dict[
     it records the minimum hydrogen (H) value. The result is stored in a nested dictionary format 
     where the first level keys are 'C_N_ar' values, the second level keys are 'O_S' values, and 
     the values are the minimum 'H' values for those combinations.
-
-    Parameters
-    ----------
-    sorted_choices : List[Dict[str, int]]
-        A list of dictionaries where each dictionary represents a compound with the following keys:
-        - 'C_N_ar' (int): The count of carbon-nitrogen aromatic bonds in the compound.
-        - 'O_S' (int): The count of oxygen-sulfur bonds in the compound.
-        - 'H' (int): The number of hydrogen atoms in the compound.
-        
-        The list represents multiple compounds with different combinations of C_N_ar, O_S, and H values.
-
-    Returns
-    -------
-    Dict[int, Dict[int, int]]
-        A nested dictionary where the first level keys are C_N_ar values (int), the second level 
-        keys are O_S values (int), and the values are the minimum H values (int) for the given combinations. 
-        The structure looks like:
-        {
-            C_N_ar_value1: {
-                O_S_value1: min_H_value,
-                O_S_value2: min_H_value,
-                ...
-            },
-            C_N_ar_value2: {
-                O_S_value1: min_H_value,
-                ...
-            }
-            ...
-        }
 
     Example
     -------
@@ -2639,7 +2611,7 @@ def drawMolecule(smiles: str) -> None:
     img = Draw.MolToImage(mol, size=(600, 600))  # Generate the image
     img.show()  # Display the image
 
-def drawMolecules(smiles_list: list[str], molsPerRow: int, maxMols: int = 100) -> list[dict]:
+def drawMolecules(smiles_list: list, molsPerRow: int, maxMols: int = 100) -> list:
     """
     Draws a grid image of molecules from a list of SMILES strings.
 
@@ -2675,7 +2647,7 @@ def drawMolecules(smiles_list: list[str], molsPerRow: int, maxMols: int = 100) -
     display(img)
     return mol_property
 
-def calculate_mass_percentages(atom_counts: dict[str, int]) -> dict[str, float]:
+def calculate_mass_percentages(atom_counts: dict) -> dict:
     """
     Calculates the mass percentages of elements based on their counts in a molecule.
 
@@ -2712,7 +2684,7 @@ def calculate_mass_percentages(atom_counts: dict[str, int]) -> dict[str, float]:
     
     return mass_percentages
 
-def ad2daf(C: float, N: float, H: float, S: float, M: float, A: float) -> tuple[float, float, float, float, float]:
+def ad2daf(C: float, N: float, H: float, S: float, M: float, A: float) -> tuple:
     """
     Converts the element percentages from the AD (as-determined) basis to the DAF (dry, ash-free) basis.
 
@@ -2756,7 +2728,7 @@ def ad2daf(C: float, N: float, H: float, S: float, M: float, A: float) -> tuple[
     
     return C_daf, N_daf, H_daf, S_daf, O_daf
 
-def daf2ad(C_daf: float, N_daf: float, H_daf: float, S_daf: float, O_daf: float, M: float, A: float) -> tuple[float, float, float, float, float]:
+def daf2ad(C_daf: float, N_daf: float, H_daf: float, S_daf: float, O_daf: float, M: float, A: float) -> tuple:
     """
     Converts the element percentages from the DAF (dry, ash-free) basis to the AD (as-determined) basis.
 

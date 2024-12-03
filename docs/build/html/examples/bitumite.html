@@ -104,7 +104,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ! pip install clipirmol</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># ! pip install clipirmol
 </pre></div>
 </div>
 </div>
@@ -115,19 +115,19 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set coal path (optional if installed via pip)</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># set coal path (optional if installed via pip)
 
-<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">json</span>
+import sys, os
+import json
 
-<span class="n">project_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;../../..&#39;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">project_path</span><span class="p">)</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">project_path</span><span class="p">)</span>
+project_path = os.path.abspath(os.path.join(os.getcwd(), &#39;../../..&#39;))
+print(project_path)
+sys.path.insert(0, project_path)
 
-<span class="c1"># import python file from coal file directory</span>
-<span class="kn">import</span> <span class="nn">coal.utils</span> <span class="k">as</span> <span class="nn">ut</span>
-<span class="kn">import</span> <span class="nn">coal.CoalGenerator</span> <span class="k">as</span> <span class="nn">gen</span>
-<span class="kn">import</span> <span class="nn">coal.ClipIRMol</span> <span class="k">as</span> <span class="nn">clipirmol</span>
+# import python file from coal file directory
+import coal.utils as ut
+import coal.CoalGenerator as gen
+import coal.ClipIRMol as clipirmol
 <br/></pre></div>
 </div>
 </div>
@@ -146,15 +146,15 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">C_ad</span> <span class="o">=</span> <span class="mf">76.12</span>  <span class="c1"># 碳</span>
-<span class="n">N_ad</span> <span class="o">=</span> <span class="mf">0.83</span>   <span class="c1"># 氮</span>
-<span class="n">H_ad</span> <span class="o">=</span> <span class="mf">4.94</span>  <span class="c1"># 氢</span>
-<span class="n">S_ad</span> <span class="o">=</span> <span class="mf">0.19</span>  <span class="c1"># 硫</span>
-<span class="n">M</span> <span class="o">=</span> <span class="mf">0.79</span>   <span class="c1"># 水分</span>
-<span class="n">A</span> <span class="o">=</span> <span class="mf">12.22</span>   <span class="c1"># 灰分</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>C_ad = 76.12  # 碳
+N_ad = 0.83   # 氮
+H_ad = 4.94  # 氢
+S_ad = 0.19  # 硫
+M = 0.79   # 水分
+A = 12.22   # 灰分
 
-<span class="n">C_daf</span><span class="p">,</span> <span class="n">N_daf</span><span class="p">,</span> <span class="n">H_daf</span><span class="p">,</span> <span class="n">S_daf</span><span class="p">,</span> <span class="n">O_daf</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">ad2daf</span><span class="p">(</span><span class="n">C_ad</span><span class="p">,</span> <span class="n">N_ad</span><span class="p">,</span> <span class="n">H_ad</span><span class="p">,</span> <span class="n">S_ad</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;C_daf, N_daf, H_daf, S_daf, O_daf = </span><span class="si">{</span><span class="n">C_daf</span><span class="p">,</span><span class="w"> </span><span class="n">N_daf</span><span class="p">,</span><span class="w"> </span><span class="n">H_daf</span><span class="p">,</span><span class="w"> </span><span class="n">S_daf</span><span class="p">,</span><span class="w"> </span><span class="n">O_daf</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+C_daf, N_daf, H_daf, S_daf, O_daf = ut.ad2daf(C_ad, N_ad, H_ad, S_ad, M, A)
+print(f&quot;C_daf, N_daf, H_daf, S_daf, O_daf = {C_daf, N_daf, H_daf, S_daf, O_daf}&quot;)
 </pre></div>
 </div>
 </div>
@@ -174,22 +174,22 @@ C_daf, N_daf, H_daf, S_daf, O_daf = (87.50431084032648, 0.9541326589263134, 5.67
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># daf       C       H       N       S       O</span>
-<span class="c1"># 主2        89.76   4.74    1.45    1.78    2.27</span>
-<span class="c1"># 主3        88.51   5.03    1.54    1.09    3.83</span>
-<span class="c1"># 肥2        88.48   5.20    1.57    0.45    4.30</span>
-<span class="c1"># 肥3        87.22   5.03    1.51    2.08    4.16</span>
-<span class="c1"># 瘦2        90.34   4.45    1.55    1.00    2.66</span>
-<span class="c1"># 瘦4        91.59   4.41    1.62    0.43    1.95</span>
-<span class="c1"># FS</span>
-<span class="n">ele_ratio</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="n">C_daf</span><span class="p">,</span>
-        <span class="s2">&quot;H&quot;</span><span class="p">:</span> <span class="n">H_daf</span><span class="p">,</span>
-        <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="n">N_daf</span><span class="p">,</span>
-        <span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="n">S_daf</span><span class="p">,</span>
-        <span class="s2">&quot;O&quot;</span><span class="p">:</span> <span class="n">O_daf</span>
-    <span class="p">}</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ele_ratio</span><span class="p">)</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># daf       C       H       N       S       O
+# 主2        89.76   4.74    1.45    1.78    2.27
+# 主3        88.51   5.03    1.54    1.09    3.83
+# 肥2        88.48   5.20    1.57    0.45    4.30
+# 肥3        87.22   5.03    1.51    2.08    4.16
+# 瘦2        90.34   4.45    1.55    1.00    2.66
+# 瘦4        91.59   4.41    1.62    0.43    1.95
+# FS
+ele_ratio = {
+        &quot;C&quot;: C_daf,
+        &quot;H&quot;: H_daf,
+        &quot;N&quot;: N_daf,
+        &quot;S&quot;: S_daf,
+        &quot;O&quot;: O_daf
+    }
+print(ele_ratio)
 </pre></div>
 </div>
 </div>
@@ -205,7 +205,7 @@ C_daf, N_daf, H_daf, S_daf, O_daf = (87.50431084032648, 0.9541326589263134, 5.67
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
 </div>
@@ -213,7 +213,7 @@ C_daf, N_daf, H_daf, S_daf, O_daf = (87.50431084032648, 0.9541326589263134, 5.67
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
 </div>
@@ -224,10 +224,10 @@ C_daf, N_daf, H_daf, S_daf, O_daf = (87.50431084032648, 0.9541326589263134, 5.67
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
-<span class="n">NMR_file_path</span> <span class="o">=</span> <span class="s2">&quot;bitumite/FB-NMR.csv&quot;</span>
-<span class="n">C90</span><span class="p">,</span> <span class="n">C180</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">calculate_C90_C180</span><span class="p">(</span><span class="n">NMR_file_path</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ppm&gt;90 =&quot;</span><span class="p">,</span> <span class="n">C90</span><span class="p">,</span> <span class="s2">&quot;,ppm&gt;180 =&quot;</span><span class="p">,</span> <span class="n">C180</span><span class="p">)</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>print(os.getcwd())
+NMR_file_path = &quot;bitumite/FB-NMR.csv&quot;
+C90, C180 = ut.calculate_C90_C180(NMR_file_path)
+print(&quot;ppm&gt;90 =&quot;, C90, &quot;,ppm&gt;180 =&quot;, C180)
 </pre></div>
 </div>
 </div>
@@ -261,17 +261,17 @@ ppm&gt;90 = 0.666 ,ppm&gt;180 = 0.028
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 输入红外文件</span>
-<span class="n">IR_file_path</span> <span class="o">=</span> <span class="s1">&#39;bitumite/FB-FTIR.CSV&#39;</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># 输入红外文件
+IR_file_path = &#39;bitumite/FB-FTIR.CSV&#39;
 
 
 
-<span class="c1"># 获取分子数据</span>
-<span class="n">retrieved_molecules</span> <span class="o">=</span> <span class="n">clipirmol</span><span class="o">.</span><span class="n">retrieve_small_molecules</span><span class="p">(</span><span class="n">IR_file_path</span><span class="p">)</span>
+# 获取分子数据
+retrieved_molecules = clipirmol.retrieve_small_molecules(IR_file_path)
 
-<span class="c1"># 打印红外光谱检索出来的小分子</span>
-<span class="c1"># smiles_and_scores = clipirmol.convert_data_to_smiles_scores(retrieved_molecules)</span>
-<span class="c1"># clipirmol.display_molecules(smiles_and_scores)</span>
+# 打印红外光谱检索出来的小分子
+# smiles_and_scores = clipirmol.convert_data_to_smiles_scores(retrieved_molecules)
+# clipirmol.display_molecules(smiles_and_scores)
 </pre></div>
 </div>
 </div>
@@ -279,30 +279,30 @@ ppm&gt;90 = 0.666 ,ppm&gt;180 = 0.028
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 从retrieved_molecules获取SMILES字符串</span>
-<span class="n">selected_smiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">mol</span><span class="p">[</span><span class="s1">&#39;smiles&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">mol</span> <span class="ow">in</span> <span class="n">retrieved_molecules</span><span class="p">]</span>
-<span class="n">extended_smiles_list</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># 从retrieved_molecules获取SMILES字符串
+selected_smiles = [mol[&#39;smiles&#39;] for mol in retrieved_molecules]
+extended_smiles_list = []
 
-<span class="c1"># 使用connect_rings_C4函数扩展这些SMILES字符串</span>
-<span class="k">for</span> <span class="n">smiles</span> <span class="ow">in</span> <span class="n">selected_smiles</span><span class="p">:</span>
-    <span class="n">extended_smiles</span> <span class="o">=</span> <span class="n">clipirmol</span><span class="o">.</span><span class="n">connect_rings_C4</span><span class="p">(</span><span class="n">smiles</span><span class="p">)</span>
-    <span class="n">extended_smiles</span> <span class="o">=</span> <span class="n">clipirmol</span><span class="o">.</span><span class="n">connect_rings_C4</span><span class="p">(</span><span class="n">extended_smiles</span><span class="p">)</span>  <span class="c1"># 再次扩展</span>
-    <span class="n">extended_smiles_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extended_smiles</span><span class="p">)</span>
+# 使用connect_rings_C4函数扩展这些SMILES字符串
+for smiles in selected_smiles:
+    extended_smiles = clipirmol.connect_rings_C4(smiles)
+    extended_smiles = clipirmol.connect_rings_C4(extended_smiles)  # 再次扩展
+    extended_smiles_list.append(extended_smiles)
 
-<span class="c1"># 更新updated_predicted_smiles_and_scores</span>
-<span class="n">updated_predicted_smiles_and_scores</span> <span class="o">=</span> <span class="p">[[(</span><span class="n">mol</span><span class="p">[</span><span class="s1">&#39;smiles&#39;</span><span class="p">],</span> <span class="n">mol</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">mol</span> <span class="ow">in</span> <span class="n">retrieved_molecules</span><span class="p">]]</span>
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">smiles</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">updated_predicted_smiles_and_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-    <span class="n">extended_smiles</span> <span class="o">=</span> <span class="n">extended_smiles_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-    <span class="n">updated_predicted_smiles_and_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">extended_smiles</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
+# 更新updated_predicted_smiles_and_scores
+updated_predicted_smiles_and_scores = [[(mol[&#39;smiles&#39;], mol[&#39;score&#39;]) for mol in retrieved_molecules]]
+for i, (smiles, score) in enumerate(updated_predicted_smiles_and_scores[0]):
+    extended_smiles = extended_smiles_list[i]
+    updated_predicted_smiles_and_scores[0][i] = (extended_smiles, score)
 
-<span class="c1"># clipirmol.display_molecules(updated_predicted_smiles_and_scores[0])</span>
+# clipirmol.display_molecules(updated_predicted_smiles_and_scores[0])
 
-<span class="c1"># 过滤SMILES</span>
-<span class="n">new_smiles_and_scores</span> <span class="o">=</span> <span class="n">clipirmol</span><span class="o">.</span><span class="n">filter_smiles_and_scores</span><span class="p">(</span><span class="n">updated_predicted_smiles_and_scores</span><span class="p">)</span>
-<span class="n">new_smiles_and_scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_smiles_and_scores</span><span class="p">]</span>
+# 过滤SMILES
+new_smiles_and_scores = clipirmol.filter_smiles_and_scores(updated_predicted_smiles_and_scores)
+new_smiles_and_scores = [new_smiles_and_scores]
 
-<span class="c1"># 显示过滤后的图像</span>
-<span class="n">clipirmol</span><span class="o">.</span><span class="n">display_molecules</span><span class="p">(</span><span class="n">new_smiles_and_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+# 显示过滤后的图像
+clipirmol.display_molecules(new_smiles_and_scores[0])
 </pre></div>
 </div>
 </div>
@@ -320,16 +320,16 @@ ppm&gt;90 = 0.666 ,ppm&gt;180 = 0.028
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">coal_smiles_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">new_smiles_and_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>coal_smiles_list = [i[0] for i in new_smiles_and_scores[0]]
 
-<span class="c1"># 指定 JSON 文件名</span>
-<span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;bitumite.json&#39;</span>
+# 指定 JSON 文件名
+filename = &#39;bitumite.json&#39;
 
-<span class="c1"># 读取现有的 JSON 数据</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+# 读取现有的 JSON 数据
+with open(filename, &#39;r&#39;) as file:
+    data = json.load(file)
 
-<span class="n">data</span><span class="p">[</span><span class="s2">&quot;C_atom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">847</span>
+data[&quot;C_atom&quot;] = 847
 </pre></div>
 </div>
 </div>
@@ -340,9 +340,9 @@ ppm&gt;90 = 0.666 ,ppm&gt;180 = 0.028
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">carbonyl</span><span class="p">,</span> <span class="n">hydroxyl</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">recommended_carbonyl_hydroxyl</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;C_atom&quot;</span><span class="p">],</span> <span class="n">ele_ratio</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The number of O in carbonyl and hydroxyl should be </span><span class="si">{</span><span class="n">carbonyl</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">hydroxyl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">carbonyl</span><span class="p">,</span> <span class="n">hydroxyl</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>carbonyl, hydroxyl = ut.recommended_carbonyl_hydroxyl(data[&quot;C_atom&quot;], ele_ratio)
+print(f&quot;The number of O in carbonyl and hydroxyl should be {carbonyl} and {hydroxyl}&quot;)
+carbonyl, hydroxyl = 5, 0
 </pre></div>
 </div>
 </div>
@@ -361,12 +361,12 @@ The number of O in carbonyl and hydroxyl should be 7 and 15
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 更新 coal_smiles_list 的值</span>
-<span class="n">data</span><span class="p">[</span><span class="s1">&#39;coal_smiles_list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coal_smiles_list</span>
-<span class="n">data</span><span class="p">[</span><span class="s1">&#39;ele_ratio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ele_ratio</span>
-<span class="n">data</span><span class="p">[</span><span class="s1">&#39;C90&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">C90</span>
-<span class="n">data</span><span class="p">[</span><span class="s1">&#39;C180&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">C180</span>
-<span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;bitumite&quot;</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># 更新 coal_smiles_list 的值
+data[&#39;coal_smiles_list&#39;] = coal_smiles_list
+data[&#39;ele_ratio&#39;] = ele_ratio
+data[&#39;C90&#39;] = C90
+data[&#39;C180&#39;] = C180
+data[&#39;type&#39;] = &quot;bitumite&quot;
 <br/><br/></pre></div>
 </div>
 </div>
@@ -374,11 +374,11 @@ The number of O in carbonyl and hydroxyl should be 7 and 15
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 将更新后的数据写回 JSON 文件</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># 将更新后的数据写回 JSON 文件
+with open(filename, &#39;w&#39;) as file:
+    json.dump(data, file, indent=4)
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Update input information successfully!&quot;</span><span class="p">)</span>
+print(&quot;Update input information successfully!&quot;)
 </pre></div>
 </div>
 </div>
@@ -394,11 +394,11 @@ Update input information successfully!
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## 读文件</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="s1">&#39;bitumite.json&#39;</span><span class="p">)</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>## 读文件
+data = ut.read_json(&#39;bitumite.json&#39;)
 
-<span class="n">generator</span> <span class="o">=</span> <span class="n">gen</span><span class="o">.</span><span class="n">CoalGenerator</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-<span class="n">current_smiles_list</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+generator = gen.CoalGenerator(data)
+current_smiles_list = generator.run()
 </pre></div>
 </div>
 </div>
@@ -499,25 +499,25 @@ File <span class="ansi-green-fg">~/.conda/envs/clipirmol/lib/python3.8/threading
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">smiles</span> <span class="ow">in</span> <span class="n">current_smiles_list</span><span class="p">:</span>
-    <span class="n">ut</span><span class="o">.</span><span class="n">drawMolecule</span><span class="p">(</span><span class="n">smiles</span><span class="p">)</span>
-<span class="c1"># # 根据smiles画分子图</span>
-<span class="c1"># from rdkit import Chem</span>
-<span class="c1"># from rdkit.Chem import Draw</span>
-<span class="c1"># from rdkit.Chem import AllChem  # 用于添加氢原子</span>
-<span class="c1"># from rdkit.Chem.Draw import IPythonConsole</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>for smiles in current_smiles_list:
+    ut.drawMolecule(smiles)
+# # 根据smiles画分子图
+# from rdkit import Chem
+# from rdkit.Chem import Draw
+# from rdkit.Chem import AllChem  # 用于添加氢原子
+# from rdkit.Chem.Draw import IPythonConsole
 
-<span class="c1"># # 假设 current_smiles_list 已经定义并包含了SMILES字符串</span>
-<span class="c1"># smiles_list = current_smiles_list</span>
+# # 假设 current_smiles_list 已经定义并包含了SMILES字符串
+# smiles_list = current_smiles_list
 
-<span class="c1"># for smiles in smiles_list:</span>
-<span class="c1">#     print(smiles)</span>
-<span class="c1">#     mol = Chem.MolFromSmiles(smiles, sanitize=False)  # 创建分子时不进行sanitize操作</span>
-<span class="c1">#</span>
+# for smiles in smiles_list:
+#     print(smiles)
+#     mol = Chem.MolFromSmiles(smiles, sanitize=False)  # 创建分子时不进行sanitize操作
+#
 
-<span class="c1">#     img = Draw.MolToImage(mol, size=(600, 600))</span>
-<span class="c1">#     img.show()</span>
-<span class="c1">#     ut.calculate_unsaturated_carbon_ratio(smiles)</span>
+#     img = Draw.MolToImage(mol, size=(600, 600))
+#     img.show()
+#     ut.calculate_unsaturated_carbon_ratio(smiles)
 <br/></pre></div>
 </div>
 </div>
@@ -528,8 +528,8 @@ File <span class="ansi-green-fg">~/.conda/envs/clipirmol/lib/python3.8/threading
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ratio</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">calculate_unsaturated_carbon_ratio</span><span class="p">(</span><span class="s2">&quot;CC1CCc(c(C1=O)cc2)c3c2c4c(Cc(cc5)c(C4)c6c5c7c(C(CC(C7=O)C8CCc(cn9)c(C8=O)c</span><span class="si">%10c</span><span class="s2">9c</span><span class="si">%11c</span><span class="s2">(C(c(c%12)c(C%11)cc</span><span class="si">%13c%12c%14c</span><span class="s2">(CCC(C%14=O)C%15CCC(C(C%15=O)C)c(cc%16)cc</span><span class="si">%17c%16c%18c</span><span class="s2">(Cc(c(C%18)c(COC%19CCc(cc%20)c(C%19=O)c</span><span class="si">%21c%20c</span><span class="s2">c</span><span class="si">%22c</span><span class="s2">(Cc(c(C%22)cc%23)c</span><span class="si">%24c%23c</span><span class="s2">ccc%24C(C%25CCC(C(C%25C%26CCc(c(C%26=O)c</span><span class="si">%27c</span><span class="s2">%28Cc(c%29)c(C%27)cc</span><span class="si">%30c%29c</span><span class="s2">(CC%31CCC(C(C%31C)=O)C)cc</span><span class="si">%32c</span><span class="s2">%30CCCC%32)c</span><span class="si">%33c%28c</span><span class="s2">ccc%33)=O)OCC%34CCCCC</span><span class="si">%34c%35c</span><span class="s2">(Cc(c(C%36)cc%37)c</span><span class="si">%38c%37c</span><span class="s2">cc(C%39CCC(C(C%39C)=O)C)c%38)c%36ncc%35)C)c%21)n%40)c</span><span class="si">%41c%40c%42c</span><span class="s2">(CCCC%42)cc%41)cc%17)cn%13)C)cc%10)C)nc6)cc3&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unsatutated carbon rate of final coal model is&quot;</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span>
+<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>ratio = ut.calculate_unsaturated_carbon_ratio(&quot;CC1CCc(c(C1=O)cc2)c3c2c4c(Cc(cc5)c(C4)c6c5c7c(C(CC(C7=O)C8CCc(cn9)c(C8=O)c%10c9c%11c(C(c(c%12)c(C%11)cc%13c%12c%14c(CCC(C%14=O)C%15CCC(C(C%15=O)C)c(cc%16)cc%17c%16c%18c(Cc(c(C%18)c(COC%19CCc(cc%20)c(C%19=O)c%21c%20cc%22c(Cc(c(C%22)cc%23)c%24c%23cccc%24C(C%25CCC(C(C%25C%26CCc(c(C%26=O)c%27c%28Cc(c%29)c(C%27)cc%30c%29c(CC%31CCC(C(C%31C)=O)C)cc%32c%30CCCC%32)c%33c%28cccc%33)=O)OCC%34CCCCC%34c%35c(Cc(c(C%36)cc%37)c%38c%37ccc(C%39CCC(C(C%39C)=O)C)c%38)c%36ncc%35)C)c%21)n%40)c%41c%40c%42c(CCCC%42)cc%41)cc%17)cn%13)C)cc%10)C)nc6)cc3&quot;)
+print(&quot;Unsatutated carbon rate of final coal model is&quot;, ratio)
 </pre></div>
 </div>
 </div>

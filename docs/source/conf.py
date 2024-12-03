@@ -25,6 +25,7 @@ print("Current sys.path:", sys.path)  # 确认路径打印是否正确
 
 extensions = [
     'sphinx.ext.autodoc',       # Auto-generates docs from docstrings
+    'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',      # Supports Google/NumPy docstring styles
     'sphinx.ext.viewcode',
     'nbsphinx',                 # For handling Jupyter Notebook files
