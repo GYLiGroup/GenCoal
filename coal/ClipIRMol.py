@@ -7,7 +7,7 @@ from scipy.interpolate import CubicSpline
 import torch
 import torch.nn.functional as F
 import pickle
-import coal.main as main
+from coal import main
 import random
 from IPython.display import display
 from rdkit.Chem.rdchem import BondType

@@ -10,3 +10,4 @@ rdkit==2022.9.5
 scipy==1.10.1
 selfies==2.1.1
 matplotlib==3.7.1
+joblib==1.2.0
