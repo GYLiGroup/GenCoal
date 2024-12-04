@@ -1,11 +1,14 @@
 import torch
+import torch.optim as optim
 from torch import nn
 from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
 from torch.nn import functional as F
-from torch import nn
 import numpy as np
 import pandas as pd
 import selfies as sf
+from typing import List, Dict, Tuple, Optional, Callable
+from coal import ClipIRMol
 
 def preprocess(input_file: str, output_file: str):
     """
@@ -157,7 +160,8 @@ class SELFIES_Dataset(Dataset):
         A transformation function to apply on each input and target sequence. By default, no transformation is applied.
     """
     
-    def __init__(self, input_seq: list[str], target_seq: list[str], transform: Optional[Callable] = None) -> None:
+    def __init__(self, input_seq: List[str], target_seq: List[str], transform: Optional[Callable] = None) -> None:
+
         """
         Initializes the dataset with input and target sequences and an optional transformation function.
         
@@ -187,7 +191,7 @@ class SELFIES_Dataset(Dataset):
         """
         return len(self.X)
 
-    def __getitem__(self, idx: int) -> Tuple[Any, Any]:
+    def __getitem__(self, idx: int) -> Tuple:
         """
         Returns a single sample from the dataset, with optional transformations applied.
         
@@ -198,7 +202,7 @@ class SELFIES_Dataset(Dataset):
         
         Returns
         -------
-        Tuple[Any, Any]
+        Tuple
             A tuple containing the input sequence and the corresponding target sequence.
             If transforms are applied, the sequences are transformed before returning.
         """
@@ -277,7 +281,7 @@ class TextEncoder(nn.Module):
     """
     A convolutional encoder for text sequences, typically used in variational autoencoders (VAEs).
     
-    Parameters:
+    Parameters
     ----------
     params : dict
         A dictionary containing model parameters, such as the number of characters (num_characters),
@@ -289,7 +293,7 @@ class TextEncoder(nn.Module):
         """
         Initializes the TextEncoder with the provided parameters.
         
-        Parameters:
+        Parameters
         ----------
         params : dict
             Dictionary containing hyperparameters like number of characters, sequence length,
@@ -334,7 +338,7 @@ class TextEncoder(nn.Module):
         """
         Reparameterization trick to sample from a normal distribution N(mu, sigma^2).
         
-        Parameters:
+        Parameters
         ----------
         mu : torch.Tensor
             The mean of the distribution.
@@ -342,7 +346,7 @@ class TextEncoder(nn.Module):
         logvar : torch.Tensor
             The log variance of the distribution.
         
-        Returns:
+        Returns
         -------
         torch.Tensor
             A sample from the distribution using the reparameterization trick.
@@ -356,12 +360,12 @@ class TextEncoder(nn.Module):
         Forward pass through the encoder network. Applies the specified number of convolutional layers 
         followed by fully connected layers to output mu, logvar, and the latent representation z.
         
-        Parameters:
+        Parameters
         ----------
         x : torch.Tensor
             The input tensor (one-hot encoded text).
         
-        Returns:
+        Returns
         -------
         torch.Tensor
             A tuple (z, mu, logvar) where z is the latent representation, and mu, logvar are used in the VAE.
@@ -458,12 +462,12 @@ class VAE(nn.Module):
         """
         Initialize the hidden state for the LSTM.
         
-        Parameters:
+        Parameters
         ----------
         batch_size : int
             The size of the batch.
         
-        Returns:
+        Returns
         -------
         torch.Tensor
             The initial hidden state for the LSTM.
@@ -476,7 +480,7 @@ class VAE(nn.Module):
         """
         Reparameterization trick to sample from a normal distribution N(mu, sigma^2).
         
-        Parameters:
+        Parameters
         ----------
         mu : torch.Tensor
             The mean of the distribution.
@@ -484,7 +488,7 @@ class VAE(nn.Module):
         logvar : torch.Tensor
             The log variance of the distribution.
         
-        Returns:
+        Returns
         -------
         torch.Tensor
             A sample from the distribution using the reparameterization trick.
@@ -497,12 +501,12 @@ class VAE(nn.Module):
         """
         The encoder network that processes the input sequence and returns latent variable `z`, `mu`, and `logvar`.
         
-        Parameters:
+        Parameters
         ----------
         x : torch.Tensor
             The input sequence.
         
-        Returns:
+        Returns
         -------
         Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
             A tuple containing the latent variable `z`, the mean `mu`, and log variance `logvar`.
@@ -514,12 +518,12 @@ class VAE(nn.Module):
         """
         The decoder network that takes the latent variable `z` and generates a reconstructed sequence.
         
-        Parameters:
+        Parameters
         ----------
         z : torch.Tensor
             The latent variable.
         
-        Returns:
+        Returns
         -------
         torch.Tensor
             The reconstructed sequence `x_hat`.
@@ -534,12 +538,12 @@ class VAE(nn.Module):
         """
         The forward pass of the VAE model. Encodes the input and decodes it back into a reconstructed sequence.
         
-        Parameters:
+        Parameters
         ----------
         x : torch.Tensor
             The input sequence.
         
-        Returns:
+        Returns
         -------
         Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
             The reconstructed sequence `x_hat`, latent variable `z`, mean `mu`, and log variance `logvar`.
@@ -553,7 +557,7 @@ def loss_function(recon_x: torch.Tensor, x: torch.Tensor, mu: torch.Tensor, logv
     """
     VAE Loss function: A combination of Reconstruction Loss and KL Divergence.
     
-    Parameters:
+    Parameters
     ----------
     recon_x : torch.Tensor
         The reconstructed input from the decoder (predicted).
@@ -566,7 +570,7 @@ def loss_function(recon_x: torch.Tensor, x: torch.Tensor, mu: torch.Tensor, logv
     KLD_alpha : float
         The weight for the KL Divergence loss.
 
-    Returns:
+    Returns
     -------
     BCE : torch.Tensor
         The Binary Cross-Entropy (or other reconstruction loss) term.
@@ -605,7 +609,7 @@ def train(model: nn.Module,
         epoch (int): The current epoch number. Used for logging.
         KLD_alpha (float): A scaling factor for the Kullback-Leibler Divergence (KLD) term in the loss function.
 
-    Returns:
+    Returns
         tuple: A tuple containing:
             - avg_train_loss (float): The average loss for the epoch.
             - avg_BCE (float): The average Binary Cross-Entropy (BCE) loss across the epoch.
@@ -683,7 +687,7 @@ def test(model: nn.Module,
         epoch (int): The current epoch number. Used for logging.
         KLD_alpha (float): A scaling factor for the Kullback-Leibler Divergence (KLD) term in the loss function, which should be the same as used in training.
 
-    Returns:
+    Returns
         float: The average test loss for the entire test set.
 
     This function performs the evaluation (testing) loop:
@@ -831,7 +835,7 @@ class CLIP(nn.Module):
         Args:
             image (Tensor): The input image tensor, with shape [batch_size, channels, height, width].
         
-        Returns:
+        Returns
             Tensor: The encoded image features with shape [batch_size, feature_dim].
         """
         # image (1,36,50) -> (1,32,32) -> (32,32) -> (256,)
@@ -847,7 +851,7 @@ class CLIP(nn.Module):
         Args:
             text (Tensor): The input text tensor, with shape [batch_size, text_length].
         
-        Returns:
+        Returns
             Tensor: The encoded text features with shape [batch_size, feature_dim].
         """
         # Extract text features from the text encoder (assuming it returns a tuple)
@@ -863,7 +867,7 @@ class CLIP(nn.Module):
             image (Tensor): The input image tensor, with shape [batch_size, channels, height, width].
             text (Tensor): The input text tensor, with shape [batch_size, text_length].
         
-        Returns:
+        Returns
             logits_per_image (Tensor): The similarity scores between images and texts, shape [batch_size, batch_size].
             logits_per_text (Tensor): The similarity scores between texts and images, shape [batch_size, batch_size].
         """

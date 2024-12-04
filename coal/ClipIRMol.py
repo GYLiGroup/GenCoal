@@ -915,7 +915,7 @@ def show_atom_number(mol: Chem.Mol, label: str) -> Chem.Mol:
     
     return mol
 
-def find_required_carbons(smiles: str) -> list[int]:
+def find_required_carbons(smiles: str) -> list:
     """
     Finds carbon atoms in a molecule that are connected to exactly two carbon atoms and one hydrogen atom.
 
@@ -1110,8 +1110,7 @@ def find_required_aldehyde_carbons(smiles: str) -> list:
 def satisfy_beta_carbons_conditions(smiles: str) -> bool:
     """
     Check if the molecule's alpha and beta carbons satisfy certain conditions around the aldehyde group:
-    - The beta carbons, which are connected to alpha carbons, must have at least one neighbor
-      with fewer than 3 neighbors (i.e., connected to a hydrogen or a simple carbon-carbon bond).
+    The beta carbons, which are connected to alpha carbons, must have at least one neighbor with fewer than 3 neighbors (i.e., connected to a hydrogen or a simple carbon-carbon bond).
     
     Parameters
     ----------
