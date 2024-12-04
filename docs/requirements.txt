@@ -1,5 +1,6 @@
 Sphinx==7.1.2
 sphinx-rtd-theme==3.0.1
+sphinx-gallery==0.18.0
 sphinxcontrib-applehelp==1.0.4
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==2.0.1
