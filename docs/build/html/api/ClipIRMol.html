@@ -72,7 +72,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#coal.ClipIRMol.process_image"><code class="docutils literal notranslate"><span class="pre">process_image()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.ClipIRMol.retrieve_small_molecules"><code class="docutils literal notranslate"><span class="pre">retrieve_small_molecules()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.ClipIRMol.satisfy_beta_carbons_conditions"><code class="docutils literal notranslate"><span class="pre">satisfy_beta_carbons_conditions()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#coal.ClipIRMol.satisfy_conditions"><code class="docutils literal notranslate"><span class="pre">satisfy_conditions()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.ClipIRMol.show_atom_number"><code class="docutils literal notranslate"><span class="pre">show_atom_number()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.ClipIRMol.skip_and_update_top_n_ranking"><code class="docutils literal notranslate"><span class="pre">skip_and_update_top_n_ranking()</span></code></a></li>
 </ul>
@@ -110,120 +109,790 @@
 <span id="clipirmol-module"></span><h1>ClipIRMol Module<a class="headerlink" href="#module-coal.ClipIRMol" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.check_c_neigh_o">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_c_neigh_o</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.check_c_neigh_o" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_c_neigh_o</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#coal.ClipIRMol.check_c_neigh_o" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if each carbon atom in the molecule has at most one oxygen neighbor.</p>
+<p>This function iterates over all carbon atoms in the provided molecule and checks the number
+of oxygen atoms that are directly bonded to each carbon atom. If any carbon atom has more
+than one oxygen neighbor, the function returns <cite>False</cite>. Otherwise, it returns <cite>True</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>molecule</strong> (<em>rdkit.Chem.Mol</em>) – The RDKit molecule object to be checked. This object contains the atomic information of the molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if all carbon atoms have at most one oxygen neighbor.
+Returns <cite>False</cite> if any carbon atom has more than one oxygen neighbor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;CC(=O)O&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_c_neigh_o</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule_invalid</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C(CO)O&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_c_neigh_o</span><span class="p">(</span><span class="n">molecule_invalid</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This function assumes that the molecule is represented as an RDKit <cite>Chem.Mol</cite> object.</p></li>
+<li><p>It checks only direct bonds between carbon and oxygen atoms.</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.check_chain_double_bonds">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_chain_double_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.check_chain_double_bonds" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_chain_double_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#coal.ClipIRMol.check_chain_double_bonds" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if the molecule has any non-ring chain double bonds (i.e., double bonds between carbon atoms that
+are not part of a ring structure). If such bonds are found, the function returns <cite>False</cite>; otherwise, it returns <cite>True</cite>.</p>
+<p>This function checks each carbon-carbon bond in the molecule to determine if:
+- The bond is a double bond.
+- Both carbon atoms involved in the double bond are not part of any ring structure.</p>
+<p>If both conditions are met, the function returns <cite>False</cite>, indicating that the molecule contains an invalid non-ring
+double bond. If no such bonds are found, the function returns <cite>True</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>molecule</strong> (<em>rdkit.Chem.Mol</em>) – The RDKit molecule object containing the atomic and bonding information of the molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if there are no non-ring carbon-carbon double bonds in the molecule.
+Returns <cite>False</cite> if there is a non-ring carbon-carbon double bond.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C=C&#39;</span><span class="p">)</span>  <span class="c1"># a simple carbon-carbon double bond</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_chain_double_bonds</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+<span class="go">True  # because both carbon atoms are not part of a ring</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule_invalid</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CC=CC1&#39;</span><span class="p">)</span>  <span class="c1"># a ring with a carbon-carbon double bond</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_chain_double_bonds</span><span class="p">(</span><span class="n">molecule_invalid</span><span class="p">)</span>
+<span class="go">True  # valid ring with a double bond</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule_invalid</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C=C=C&#39;</span><span class="p">)</span>  <span class="c1"># a chain with a non-ring carbon-carbon double bond</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_chain_double_bonds</span><span class="p">(</span><span class="n">molecule_invalid</span><span class="p">)</span>
+<span class="go">False  # non-ring carbon-carbon double bond found</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The function uses RDKit’s <cite>GetRingInfo().IsAtomInRingOfSize()</cite> method to check if atoms are part of a ring structure.</p></li>
+<li><p>The function only checks single and double bonds between carbon atoms, ignoring other bonds.</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.check_chain_n_c">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_chain_n_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.check_chain_n_c" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_chain_n_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#coal.ClipIRMol.check_chain_n_c" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if all nitrogen atoms (N) in the molecule are connected to carbon (C) atoms that are part of a six-membered ring.
+If any nitrogen-carbon bond is not part of a six-membered ring, the function returns <cite>False</cite>; otherwise, it returns <cite>True</cite>.</p>
+<p>This function iterates through each nitrogen atom in the molecule and checks whether each nitrogen is connected to
+a carbon atom, and whether both atoms involved in the bond are part of a six-membered ring.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>molecule</strong> (<em>rdkit.Chem.Mol</em>) – The RDKit molecule object containing the atomic and bonding information of the molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if all nitrogen atoms are connected to carbon atoms that are part of a six-membered ring.
+Returns <cite>False</cite> if any nitrogen-carbon bond is not part of a six-membered ring.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;NCCN&#39;</span><span class="p">)</span>  <span class="c1"># a chain with nitrogen atoms connected to carbon atoms</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_chain_n_c</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+<span class="go">False  # because the N-C bonds are not part of six-membered rings</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule_valid</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CCCCNC1&#39;</span><span class="p">)</span>  <span class="c1"># a six-membered ring with nitrogen and carbon atoms</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_chain_n_c</span><span class="p">(</span><span class="n">molecule_valid</span><span class="p">)</span>
+<span class="go">True  # because the N-C bonds are part of a six-membered ring</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The function uses RDKit’s <cite>GetRingInfo().IsAtomInRingOfSize()</cite> method to check if atoms are part of a six-membered ring.</p></li>
+<li><p>Only checks nitrogen-carbon bonds, ignoring other types of bonds.</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.check_five_membered_ring">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_five_membered_ring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ring</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.check_five_membered_ring" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_five_membered_ring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#coal.ClipIRMol.check_five_membered_ring" title="Permalink to this definition"></a></dt>
+<dd><p>Validates whether a five-membered ring in a molecule satisfies specific structural criteria:
+- The ring should contain exactly 4 double bonds.
+- The ring should contain no more than one heteroatom, which can be either nitrogen (N) or sulfur (S).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>molecule</strong> (<em>rdkit.Chem.Mol</em>) – The RDKit molecule object containing the atomic and bonding information of the molecule.</p></li>
+<li><p><strong>ring</strong> (<em>list</em>) – A list of atom indices representing the five-membered ring in the molecule. The atoms in the ring are indexed by their position in the molecule.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if the five-membered ring satisfies all the structural criteria, otherwise <cite>False</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CCC2C2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ring</span> <span class="o">=</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">AtomRings</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_five_membered_ring</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">ring</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule_invalid</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CCN2C2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ring</span> <span class="o">=</span> <span class="n">molecule_invalid</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">AtomRings</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_five_membered_ring</span><span class="p">(</span><span class="n">molecule_invalid</span><span class="p">,</span> <span class="n">ring</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The function checks if the ring contains exactly 4 double bonds (<cite>double_bonds == 4</cite>) and no more than one heteroatom (N or S).</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.check_invalid_bonds">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_invalid_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.check_invalid_bonds" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_invalid_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#coal.ClipIRMol.check_invalid_bonds" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if a molecule contains any invalid bonds. Invalid bonds are defined as:
+- Nitrogen (N) bonded to Oxygen (O)
+- Oxygen (O) bonded to Oxygen (O)
+- Sulfur (S) bonded to Oxygen (O)
+- Sulfur (S) bonded to Sulfur (S)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>molecule</strong> (<em>rdkit.Chem.Mol</em>) – The RDKit molecule object containing the atomic and bonding information of the molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if no invalid bonds are found in the molecule, and <cite>False</cite> if any invalid bonds are detected.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CCO1&#39;</span><span class="p">)</span>  <span class="c1"># valid bond</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_invalid_bonds</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule_invalid</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1SNO1&#39;</span><span class="p">)</span>  <span class="c1"># invalid bond (S-N)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_invalid_bonds</span><span class="p">(</span><span class="n">molecule_invalid</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The function checks all bonds in the molecule to see if any of them match the invalid combinations.</p></li>
+<li><p>If any invalid bond is found, the function immediately returns <cite>False</cite>.</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.check_isotope">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_isotope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.check_isotope" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_isotope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#coal.ClipIRMol.check_isotope" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if all atoms in a molecule are isotopes with an isotope value of 0.</p>
+<p>This function iterates over all atoms in the provided molecule and checks if their isotope value
+is 0. If all atoms have an isotope value of 0 (indicating no isotopes), the function returns
+<cite>True</cite>. If any atom has a non-zero isotope value, indicating that it is an isotope, the function
+returns <cite>False</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>molecule</strong> (<em>rdkit.Chem.Mol</em>) – The RDKit molecule object to be checked. This object contains the atomic information of the molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if no atoms in the molecule are isotopes (all atoms have isotope value 0).
+Returns <cite>False</cite> if at least one atom in the molecule is an isotope (has a non-zero isotope value).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;CC(=O)C&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_isotope</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule_isotope</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;CC(=O)[13C]&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_isotope</span><span class="p">(</span><span class="n">molecule_isotope</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This function assumes that the molecule is represented as an RDKit <cite>Chem.Mol</cite> object.</p></li>
+<li><p>An isotope is identified by checking if the <cite>GetIsotope</cite> method of the atom returns a value other than 0.</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.check_ring_no_oxy_sulph">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_ring_no_oxy_sulph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.check_ring_no_oxy_sulph" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_ring_no_oxy_sulph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#coal.ClipIRMol.check_ring_no_oxy_sulph" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if a molecule’s rings contain any oxygen atoms or more than one heteroatom (nitrogen or sulfur).
+The function returns <cite>False</cite> if any of the following conditions are met in any ring:
+- The ring contains an oxygen atom.
+- The ring contains more than one heteroatom (nitrogen or sulfur).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>molecule</strong> (<em>rdkit.Chem.Mol</em>) – The RDKit molecule object containing the atomic and bonding information of the molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if none of the rings in the molecule contain oxygen atoms or more than one heteroatom.
+Returns <cite>False</cite> if any ring contains an oxygen atom or more than one heteroatom.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CC2CCO2C1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_ring_no_oxy_sulph</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule_no_oxy_sulph</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CCCC2C2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_ring_no_oxy_sulph</span><span class="p">(</span><span class="n">molecule_no_oxy_sulph</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The function checks each ring in the molecule for the presence of oxygen (<cite>O</cite>) and heteroatoms (<cite>N</cite>, <cite>S</cite>).</p></li>
+<li><p>It returns <cite>False</cite> if any ring contains oxygen or more than one heteroatom.</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.check_rings">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_rings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.check_rings" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_rings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#coal.ClipIRMol.check_rings" title="Permalink to this definition"></a></dt>
+<dd><p>Checks the validity of rings in a molecule, ensuring that six-membered and five-membered rings
+satisfy certain criteria defined by the helper functions <cite>check_six_membered_ring</cite> and <cite>check_five_membered_ring</cite>.</p>
+<p>The function examines all the rings present in the molecule. For each ring, if the ring contains six atoms,
+it is passed to the <cite>check_six_membered_ring</cite> function for validation. Similarly, five-membered rings are
+passed to the <cite>check_five_membered_ring</cite> function. Any ring that doesn’t meet these criteria or is neither
+five nor six members long will cause the function to return <cite>False</cite>. If all rings are valid, it returns <cite>True</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>molecule</strong> (<em>rdkit.Chem.Mol</em>) – The RDKit molecule object whose rings are to be checked. This object contains the atomic and bonding information of the molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if all rings in the molecule are either six-membered or five-membered and pass their respective checks.
+Returns <cite>False</cite> if any ring is invalid (either it has a different number of atoms or fails the respective check).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CCCCC1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_rings</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule_invalid</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CCCC1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_rings</span><span class="p">(</span><span class="n">molecule_invalid</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This function assumes that the molecule is represented as an RDKit <cite>Chem.Mol</cite> object.</p></li>
+<li><p>The helper functions <cite>check_six_membered_ring</cite> and <cite>check_five_membered_ring</cite> are used to validate specific ring types.</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.check_six_membered_ring">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_six_membered_ring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ring</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.check_six_membered_ring" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">check_six_membered_ring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#coal.ClipIRMol.check_six_membered_ring" title="Permalink to this definition"></a></dt>
+<dd><p>Validates whether a six-membered ring in a molecule satisfies specific structural criteria:
+- The ring should be a true six-membered ring.
+- The ring must contain exactly 6 double bonds.
+- The ring must contain no more than one nitrogen atom (‘N’).
+- If a nitrogen atom is present, it should not have a total degree of 3 (i.e., it should not be a tertiary nitrogen).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>molecule</strong> (<em>rdkit.Chem.Mol</em>) – The RDKit molecule object containing the atomic and bonding information of the molecule.</p></li>
+<li><p><strong>ring</strong> (<em>list</em>) – A list of atom indices representing the six-membered ring in the molecule. The atoms in the ring are indexed by their position in the molecule.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if the six-membered ring satisfies all the structural criteria, otherwise <cite>False</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CCCCC1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ring</span> <span class="o">=</span> <span class="n">molecule</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">AtomRings</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_six_membered_ring</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">ring</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">molecule_invalid</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;C1CCNCC1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ring</span> <span class="o">=</span> <span class="n">molecule_invalid</span><span class="o">.</span><span class="n">GetRingInfo</span><span class="p">()</span><span class="o">.</span><span class="n">AtomRings</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">check_six_membered_ring</span><span class="p">(</span><span class="n">molecule_invalid</span><span class="p">,</span> <span class="n">ring</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The function checks if the ring contains exactly 6 double bonds (<cite>double_bonds == 6</cite>) and no more than one nitrogen atom.</p></li>
+<li><p>If nitrogen is present in the ring, it ensures that it is not a tertiary nitrogen (degree == 3).</p></li>
+<li><p>The function also validates that the atom at index 0 of the ring is in a six-membered ring.</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.compute_similarity">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">compute_similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.compute_similarity" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">compute_similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#coal.ClipIRMol.compute_similarity" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the similarity between image features and precomputed text features using the CLIP model.</p>
+<p>This function performs the following tasks:
+1. Moves the model and inputs to the appropriate device (CPU or GPU).
+2. Encodes the input image into feature embeddings using the CLIP model.
+3. Normalizes both the image and text features.
+4. Computes the cosine similarity between the normalized image features and the normalized text features.</p>
+<p>The similarity score is computed as the dot product of the normalized image and text feature vectors,
+scaled by a factor of 100.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_input</strong> (<em>np.ndarray</em>) – The input image data as a numpy array. The shape of the input should be compatible with the CLIP model.
+Typically, this should be of shape (1, C, H, W), where C is the number of channels, H is the height,
+and W is the width of the image.</p></li>
+<li><p><strong>clip_model</strong> (<em>torch.nn.Module</em>) – The pre-trained CLIP model, used to generate image features from the input image.</p></li>
+<li><p><strong>text_features</strong> (<em>np.ndarray</em>) – A numpy array of precomputed text features. Each row in this array represents a feature vector
+corresponding to a text input.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A numpy array containing the similarity scores between the image features and each of the precomputed text features.
+The similarity score is scaled by a factor of 100 and represents the cosine similarity between the vectors.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The function assumes the input image and text features are already preprocessed and ready for similarity computation.</p></li>
+<li><p>The function moves all tensors to the appropriate device (CPU or GPU) based on availability of CUDA.</p></li>
+<li><p>The similarity scores are calculated by first normalizing the image and text feature vectors, and then computing their dot product.</p></li>
+</ul>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">image_input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>  <span class="c1"># Example image data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clip_model</span> <span class="o">=</span> <span class="n">load_clip_model</span><span class="p">()</span>  <span class="c1"># Load your pre-trained CLIP model</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">text_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>  <span class="c1"># Example text features</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">similarity_scores</span> <span class="o">=</span> <span class="n">compute_similarity</span><span class="p">(</span><span class="n">image_input</span><span class="p">,</span> <span class="n">clip_model</span><span class="p">,</span> <span class="n">text_features</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">similarity_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(1, 10)  # Similarity score between the image and each of the 10 text features</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.connect_rings_C4">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">connect_rings_C4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.connect_rings_C4" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">connect_rings_C4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#coal.ClipIRMol.connect_rings_C4" title="Permalink to this definition"></a></dt>
+<dd><p>Connects a molecule, represented by a SMILES string <cite>smiles1</cite>, with a butane molecule (‘CCCC’),
+using two suitable carbon atoms from <cite>smiles1</cite> that meet specific connection conditions.</p>
+<p>This function performs the following steps:
+1. Finds suitable carbon atoms in <cite>smiles1</cite> that are connected to two other carbon atoms and one hydrogen atom.
+2. Randomly selects one pair of adjacent suitable carbon atoms.
+3. Connects the selected pair of carbon atoms from <cite>smiles1</cite> to two carbon atoms in the butane molecule (<cite>smiles2 = ‘CCCC’</cite>).
+4. The bond type between the connected atoms is set to aromatic.
+5. Returns the SMILES representation of the new molecule with the combined structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>smiles1</strong> (<em>str</em>) – The SMILES string representing the first molecule (which will be connected to butane).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The SMILES representation of the new molecule after connecting the rings.
+If no suitable carbon atoms are found in <cite>smiles1</cite>, the function returns <cite>None</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">connect_rings_C4</span><span class="p">(</span><span class="s1">&#39;CC1=CC2C=CC(C)=C2C=C1&#39;</span><span class="p">)</span>
+<span class="go">&#39;CC1=CC2C=CC(C)=C2C=C1CCCC&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.convert_data_to_smiles_scores">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">convert_data_to_smiles_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">retrieved_molecules</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.convert_data_to_smiles_scores" title="Permalink to this definition"></a></dt>
-<dd><p>Convert the retrieved molecules data into a list of (SMILES, score) tuples.</p>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">convert_data_to_smiles_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">retrieved_molecules</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#coal.ClipIRMol.convert_data_to_smiles_scores" title="Permalink to this definition"></a></dt>
+<dd><p>Converts the retrieved molecules data into a list of (SMILES, score) tuples.</p>
+<p>This function takes the data of retrieved molecules, where each entry contains a ‘smiles’ and ‘score’ key,
+and converts it into a list of tuples. Each tuple contains the SMILES string and the corresponding similarity score.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>retrieved_molecules</strong> (<em>list</em>) – A list of dictionaries, where each dictionary contains the following keys:
+- ‘smiles’: The SMILES string representing the molecule.
+- ‘score’: The similarity score of the molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of tuples, where each tuple contains:
+- A SMILES string representing a molecule.
+- A similarity score of the molecule.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">retrieved_molecules</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">{</span><span class="s1">&#39;smiles&#39;</span><span class="p">:</span> <span class="s1">&#39;CCO&#39;</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="mf">95.6</span><span class="p">},</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">{</span><span class="s1">&#39;smiles&#39;</span><span class="p">:</span> <span class="s1">&#39;CCN&#39;</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="mf">93.4</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convert_data_to_smiles_scores</span><span class="p">(</span><span class="n">retrieved_molecules</span><span class="p">)</span>
+<span class="go">[(&#39;CCO&#39;, 95.6), (&#39;CCN&#39;, 93.4)]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.display_molecules">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">display_molecules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles_and_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mols_per_row</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(300,</span> <span class="pre">300)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.display_molecules" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">display_molecules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles_and_scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mols_per_row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(300,</span> <span class="pre">300)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#coal.ClipIRMol.display_molecules" title="Permalink to this definition"></a></dt>
 <dd><p>Create and display a grid image of molecules with their associated scores.</p>
+<p>This function takes a list of (SMILES, score) tuples, converts the SMILES strings into RDKit molecule objects,
+and generates a grid image of the molecules. Each molecule will be labeled with its corresponding SMILES string
+and similarity score. The image will be displayed in a grid format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>smiles_and_scores</strong> (<em>list</em>) – A list of tuples, where each tuple contains:
+- A SMILES string representing the molecule.
+- A similarity score associated with the molecule.</p></li>
+<li><p><strong>mols_per_row</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default=5</em>) – The number of molecules to display per row in the grid. The default value is 5.</p></li>
+<li><p><strong>img_size</strong> (<em>tuple</em><em>, </em><em>optional</em><em>, </em><em>default=</em><em>(</em><em>300</em><em>, </em><em>300</em><em>)</em>) – The size of each individual image (width, height) in the grid. The default value is (300, 300).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>This function does not return anything. It displays the image in the output.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">smiles_and_scores</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">(</span><span class="s1">&#39;CCO&#39;</span><span class="p">,</span> <span class="mf">95.6</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">(</span><span class="s1">&#39;CCN&#39;</span><span class="p">,</span> <span class="mf">93.4</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">(</span><span class="s1">&#39;CCCl&#39;</span><span class="p">,</span> <span class="mf">89.2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">display_molecules</span><span class="p">(</span><span class="n">smiles_and_scores</span><span class="p">,</span> <span class="n">mols_per_row</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.filter_smiles_and_scores">
 <span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">filter_smiles_and_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">updated_predicted_smiles_and_scores</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.filter_smiles_and_scores" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Filters the given list of SMILES strings and their associated similarity scores based on
+whether they satisfy the beta carbon conditions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>updated_predicted_smiles_and_scores</strong> (<em>list</em><em> of </em><em>tuple</em>) – A list of tuples, where each tuple contains a SMILES string and its corresponding score.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of tuples, where each tuple contains a SMILES string and its corresponding score
+that satisfy the beta carbon conditions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of tuple</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">updated_predicted_smiles_and_scores</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;CCO&#39;</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;CC(C)C=O&#39;</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filter_smiles_and_scores</span><span class="p">(</span><span class="n">updated_predicted_smiles_and_scores</span><span class="p">)</span>
+<span class="go">[(&#39;CC(C)C=O&#39;, 0.92)]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.find_required_aldehyde_carbons">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">find_required_aldehyde_carbons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.find_required_aldehyde_carbons" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">find_required_aldehyde_carbons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#coal.ClipIRMol.find_required_aldehyde_carbons" title="Permalink to this definition"></a></dt>
+<dd><p>Find and return the indices of carbon atoms in the given molecule that are part of an aldehyde group.
+Aldehyde groups have the structure -CHO, where the carbon is bonded to one hydrogen, one oxygen,
+and one other carbon atom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>smiles</strong> (<em>str</em>) – The SMILES string representation of the molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of indices of carbon atoms that are part of an aldehyde group. If no such carbon atoms
+are found, an empty list is returned.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">find_required_aldehyde_carbons</span><span class="p">(</span><span class="s1">&#39;CC(C)C=O&#39;</span><span class="p">)</span>
+<span class="go">[3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">find_required_aldehyde_carbons</span><span class="p">(</span><span class="s1">&#39;CCO&#39;</span><span class="p">)</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.find_required_carbons">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">find_required_carbons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.find_required_carbons" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">find_required_carbons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#coal.ClipIRMol.find_required_carbons" title="Permalink to this definition"></a></dt>
+<dd><p>Finds carbon atoms in a molecule that are connected to exactly two carbon atoms and one hydrogen atom.</p>
+<p>This function processes a given SMILES string to identify specific carbon atoms in the structure
+that meet the following conditions:
+- The carbon atom must be connected to exactly two other carbon atoms.
+- The carbon atom must be connected to exactly one hydrogen atom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>smiles</strong> (<em>str</em>) – The SMILES representation of the molecule to analyze.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of indices of the carbon atoms that satisfy the conditions described above.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[int]</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">find_required_carbons</span><span class="p">(</span><span class="s1">&#39;CCO&#39;</span><span class="p">)</span>
+<span class="go">[1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">find_required_carbons</span><span class="p">(</span><span class="s1">&#39;C1CCCCC1&#39;</span><span class="p">)</span>
+<span class="go">[1, 3, 4, 6]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.load_model_and_features">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">load_model_and_features</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.load_model_and_features" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">load_model_and_features</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#coal.ClipIRMol.load_model_and_features" title="Permalink to this definition"></a></dt>
+<dd><p>Loads the pre-trained CLIP model and associated text features from specified paths.</p>
+<p>This function performs the following tasks:
+1. Loads text encoder parameters from a binary file.
+2. Initializes the text encoder model using the loaded parameters.
+3. Loads the pre-trained CLIP model’s parameters from a specified file.
+4. Initializes the CLIP model with the loaded text encoder.
+5. Loads pre-computed text features from a specified file.</p>
+<p>The function returns a tuple containing:
+- The initialized CLIP model.
+- The loaded text features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tuple where:
+- The first element is the CLIP model (<cite>main.CLIP</cite>), initialized with the loaded parameters.
+- The second element is a numpy array containing the loaded text features.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The model parameters are loaded using <cite>torch.load</cite> and the text encoder parameters are loaded using <cite>pickle</cite>.</p></li>
+<li><p>The file paths for the text encoder parameters, model parameters, and text features are expected to be predefined in the global constants.</p></li>
+</ul>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loaded_clip_model</span><span class="p">,</span> <span class="n">loaded_text_features</span> <span class="o">=</span> <span class="n">load_model_and_features</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">loaded_clip_model</span><span class="p">)</span>
+<span class="go">&lt;CLIP model object&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">loaded_text_features</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(1000, 512)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.process_image">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">process_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.process_image" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">process_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#coal.ClipIRMol.process_image" title="Permalink to this definition"></a></dt>
+<dd><p>Processes a CSV file containing X and Y data, applies cubic spline interpolation,
+and reshapes the resulting data for further use.</p>
+<p>This function reads a CSV file where the X and Y values are stored in two columns labeled ‘X’ and ‘Y’.
+It ensures that the X values are sorted in ascending order and performs cubic spline interpolation
+to generate a smoother curve for the range from 400 to 4000 with a step size of 2.
+The interpolated data is then reshaped into a 4D numpy array with shape (2, 1, 36, 50).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>image_path</strong> (<em>str</em>) – The file path to the CSV file containing the X and Y data.
+The CSV is expected to have two columns labeled ‘X’ and ‘Y’, representing coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A 4D numpy array with shape (2, 1, 36, 50), where the first dimension corresponds to the number
+of channels (2), the second dimension corresponds to a single set of data (1),
+the third dimension corresponds to the interpolated X values (36), and the fourth dimension
+corresponds to the number of interpolated Y values (50).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The function checks if the X values are sorted in ascending order and sorts them if necessary.</p></li>
+<li><p>Cubic spline interpolation is applied to generate smoother Y values over a specific range of X values.</p></li>
+<li><p>The reshaped output is prepared in a specific format, which may be useful for feeding into neural networks or other processing pipelines.</p></li>
+</ul>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">process_image</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">)</span>
+<span class="go">array([[[[0.1, 0.2, 0.3, ..., 0.4, 0.5],</span>
+<span class="go">         [0.6, 0.7, 0.8, ..., 0.9, 1.0],</span>
+<span class="go">         ...]]])</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.retrieve_small_molecules">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">retrieve_small_molecules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.retrieve_small_molecules" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">retrieve_small_molecules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#coal.ClipIRMol.retrieve_small_molecules" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the top N small molecules whose SMILES strings are most similar to the input image using a CLIP model.</p>
+<p>This function performs the following steps:
+1. Reads the SMILES data from a CSV file (‘smile_ir.csv’).
+2. Processes the input image (specified by <cite>image_path</cite>) into a format suitable for the CLIP model.
+3. Loads the pre-trained CLIP model and precomputed text features.
+4. Computes the similarity scores between the image features and the text features using the CLIP model.
+5. Sorts the molecules by similarity score and selects the top N molecules.
+6. Returns the SMILES strings of the top N molecules along with their corresponding indices and similarity scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>image_path</strong> (<em>str</em>) – The file path of the input image to be compared to the SMILES features. This image will be processed and used to compute similarity scores.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of dictionaries, each containing:
+- ‘smiles’: The SMILES string of the molecule.
+- ‘index’: The index of the molecule in the original SMILES dataset.
+- ‘score’: The similarity score between the image and the molecule’s SMILES.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The function assumes that a CSV file named ‘smile_ir.csv’ exists, which contains the SMILES strings in a column labeled ‘smiles’.</p></li>
+<li><p>The <cite>process_image</cite> function is used to convert the input image into a format that the CLIP model can process.</p></li>
+<li><p>The <cite>skip_and_update_top_n_ranking</cite> function is used to rank the molecules by similarity score and select the top N.</p></li>
+<li><p>The pre-trained CLIP model is used to compute the similarity scores based on the image and the precomputed text features.</p></li>
+</ul>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">image_path</span> <span class="o">=</span> <span class="s1">&#39;path/to/image.png&#39;</span>  <span class="c1"># Example image file path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">retrieve_small_molecules</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="go">{&#39;smiles&#39;: &#39;CCO&#39;, &#39;index&#39;: 1, &#39;score&#39;: 95.6}</span>
+<span class="go">{&#39;smiles&#39;: &#39;CCN&#39;, &#39;index&#39;: 2, &#39;score&#39;: 93.4}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.satisfy_beta_carbons_conditions">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">satisfy_beta_carbons_conditions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.satisfy_beta_carbons_conditions" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="coal.ClipIRMol.satisfy_conditions">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">satisfy_conditions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.satisfy_conditions" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">satisfy_beta_carbons_conditions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#coal.ClipIRMol.satisfy_beta_carbons_conditions" title="Permalink to this definition"></a></dt>
+<dd><p>Check if the molecule’s alpha and beta carbons satisfy certain conditions around the aldehyde group:
+The beta carbons, which are connected to alpha carbons, must have at least one neighbor with fewer than 3 neighbors (i.e., connected to a hydrogen or a simple carbon-carbon bond).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>smiles</strong> (<em>str</em>) – The SMILES string representation of the molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if all beta carbons connected to alpha carbons satisfy the condition;
+otherwise, returns <cite>False</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">satisfy_beta_carbons_conditions</span><span class="p">(</span><span class="s1">&#39;CC(C)C=O&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">satisfy_beta_carbons_conditions</span><span class="p">(</span><span class="s1">&#39;CCO&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.show_atom_number">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">show_atom_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.show_atom_number" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">show_atom_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#coal.ClipIRMol.show_atom_number" title="Permalink to this definition"></a></dt>
+<dd><p>Annotates each atom in the molecule with its atom index.</p>
+<p>This function iterates through all the atoms in a given RDKit molecule and sets each atom’s property
+with the provided label as its atom index. This can be useful for visualizing or labeling atoms in a
+molecule, especially when working with graphical representations of molecular structures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – An RDKit molecule object to which atom indices will be added.</p></li>
+<li><p><strong>label</strong> (<em>str</em>) – The label (or property name) to associate with each atom. The atom index will be stored under this label.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input molecule with atom indices set as properties.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Chem.Mol</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mol</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s1">&#39;CCO&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labeled_mol</span> <span class="o">=</span> <span class="n">show_atom_number</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">&#39;atom_index&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">labeled_mol</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">GetProp</span><span class="p">(</span><span class="s1">&#39;atom_index&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.ClipIRMol.skip_and_update_top_n_ranking">
-<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">skip_and_update_top_n_ranking</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">similarity_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.ClipIRMol.skip_and_update_top_n_ranking" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.ClipIRMol.</span></span><span class="sig-name descname"><span class="pre">skip_and_update_top_n_ranking</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">similarity_scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#coal.ClipIRMol.skip_and_update_top_n_ranking" title="Permalink to this definition"></a></dt>
+<dd><p>Sorts molecules by similarity scores and selects the top N molecules that satisfy certain conditions.</p>
+<p>This function evaluates each molecule based on its similarity scores and checks whether it satisfies
+a set of predefined conditions. If a molecule satisfies all conditions, it is considered valid,
+and the top N valid molecules are selected based on the highest similarity scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>similarity_scores</strong> (<em>np.ndarray</em>) – A 2D numpy array where each row corresponds to a molecule,
+and each column corresponds to the similarity score between the molecule and other molecules.
+Shape: (num_molecules, num_comparisons).</p></li>
+<li><p><strong>top_n</strong> (<em>int</em>) – The number of top valid molecules to select based on the highest similarity scores.</p></li>
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – A pandas DataFrame containing the SMILES strings of the molecules.
+The DataFrame should have a column labeled ‘smiles’ that contains the SMILES representations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>updated_predicted_smiles_and_scores</strong> – A list where each element corresponds to a molecule (identified by its index) and contains the
+top N valid molecules (as SMILES strings) along with their similarity scores.
+Each inner list contains tuples of (SMILES, score) for the top N molecules.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The molecules are selected based on their similarity scores, with the highest scores being considered first.</p></li>
+<li><p>The function filters out molecules that do not satisfy all the conditions defined below.</p></li>
+<li><p>If there are fewer than <cite>top_n</cite> valid molecules, only the valid molecules will be included in the result.</p></li>
+</ul>
+</dd></dl>
 
 </section>
 

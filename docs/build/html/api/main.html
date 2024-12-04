@@ -125,28 +125,64 @@
 <dt class="sig sig-object py" id="coal.main.CLIP">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">CLIP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_encoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.CLIP" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>CLIP (Contrastive Language-Image Pre-Training) model for learning joint image-text representations.</p>
+<p>The CLIP model learns a shared embedding space for images and texts, where corresponding image-text pairs
+are closer together, and non-corresponding pairs are farther apart. It achieves this by encoding both
+images and texts using separate encoders, and then computing the cosine similarity between their embeddings
+as logits for contrastive loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text_encoder</strong> (<em>nn.Module</em>) – The pre-trained or custom text encoder that converts text into a feature vector.
+This should output a feature tensor when called with text input.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.CLIP.encode_image">
 <span class="sig-name descname"><span class="pre">encode_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.CLIP.encode_image" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Encodes the input image into a feature vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>image</strong> (<em>Tensor</em>) – The input image tensor, with shape [batch_size, channels, height, width].</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><p>Tensor: The encoded image features with shape [batch_size, feature_dim].</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.CLIP.encode_text">
 <span class="sig-name descname"><span class="pre">encode_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.CLIP.encode_text" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Encodes the input text into a feature vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>Tensor</em>) – The input text tensor, with shape [batch_size, text_length].</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><p>Tensor: The encoded text features with shape [batch_size, feature_dim].</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.CLIP.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.CLIP.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dd><p>Forward pass through the CLIP model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>Tensor</em>) – The input image tensor, with shape [batch_size, channels, height, width].</p></li>
+<li><p><strong>text</strong> (<em>Tensor</em>) – The input text tensor, with shape [batch_size, text_length].</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><p>logits_per_image (Tensor): The similarity scores between images and texts, shape [batch_size, batch_size].
+logits_per_text (Tensor): The similarity scores between texts and images, shape [batch_size, batch_size].</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -160,6 +196,12 @@ registered hooks while the latter silently ignores them.</p>
 <dt class="sig sig-object py" id="coal.main.ModifiedResNet">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">ModifiedResNet</span></span><a class="headerlink" href="#coal.main.ModifiedResNet" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A modified ResNet-inspired image encoder with multi-level residual connections.</p>
+<p>This model is designed for image encoding tasks where multiple residual connections are introduced
+across various layers to enhance feature learning. The architecture includes a series of convolutional
+layers with increasing and decreasing channel sizes, along with residual connections between the layers.
+The model utilizes dilated convolutions in some layers to capture broader contextual information.</p>
+<p>The final output is passed through a fully connected layer to generate a feature vector representation.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.ModifiedResNet.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.ModifiedResNet.forward" title="Permalink to this definition"></a></dt>
@@ -183,32 +225,69 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="coal.main.SELFIES_Dataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">SELFIES_Dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.SELFIES_Dataset" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">SELFIES_Dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_seq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_seq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.SELFIES_Dataset" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>A custom dataset class for handling pairs of input and target sequences (SELFIES) for machine learning tasks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_seq</strong> (<em>list</em><em> of </em><em>str</em>) – The list of input SELFIES sequences (usually the features or inputs to the model).</p></li>
+<li><p><strong>target_seq</strong> (<em>list</em><em> of </em><em>str</em>) – The list of target SELFIES sequences (usually the labels or outputs from the model).</p></li>
+<li><p><strong>transform</strong> (<em>Callable</em><em>, </em><em>optional</em>) – A transformation function to apply on each input and target sequence. By default, no transformation is applied.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="coal.main.TextEncoder">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">TextEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.TextEncoder" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">TextEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.TextEncoder" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A convolutional encoder for text sequences, typically used in variational autoencoders (VAEs).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – A dictionary containing model parameters, such as the number of characters (num_characters),
+sequence length (seq_length), number of convolutional layers (num_conv_layers), number of filters
+for each layer, kernel sizes, and latent space dimensions.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.TextEncoder.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.TextEncoder.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#coal.main.TextEncoder.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Forward pass through the encoder network. Applies the specified number of convolutional layers
+followed by fully connected layers to output mu, logvar, and the latent representation z.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor (one-hot encoded text).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple (z, mu, logvar) where z is the latent representation, and mu, logvar are used in the VAE.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.TextEncoder.reparameterize">
-<span class="sig-name descname"><span class="pre">reparameterize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.TextEncoder.reparameterize" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">reparameterize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#coal.main.TextEncoder.reparameterize" title="Permalink to this definition"></a></dt>
+<dd><p>Reparameterization trick to sample from a normal distribution N(mu, sigma^2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>torch.Tensor</em>) – The mean of the distribution.</p></li>
+<li><p><strong>logvar</strong> (<em>torch.Tensor</em>) – The log variance of the distribution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A sample from the distribution using the reparameterization trick.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="coal.main.TextEncoder.training">
@@ -219,47 +298,110 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="coal.main.TextImageDataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">TextImageDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onehot_selfies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.TextImageDataset" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">TextImageDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onehot_selfies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.TextImageDataset" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>A custom dataset for handling pairs of image data and one-hot encoded text data (SELFIES).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – A DataFrame containing image data, where the columns (except the first one) represent pixel values.</p></li>
+<li><p><strong>onehot_selfies</strong> (<em>np.ndarray</em>) – A NumPy array containing the one-hot encoded SELFIES sequences for each sample.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="coal.main.VAE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">VAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.VAE" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">VAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.VAE" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.VAE.decoder">
-<span class="sig-name descname"><span class="pre">decoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.VAE.decoder" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">decoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#coal.main.VAE.decoder" title="Permalink to this definition"></a></dt>
+<dd><p>The decoder network that takes the latent variable <cite>z</cite> and generates a reconstructed sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>z</strong> (<em>torch.Tensor</em>) – The latent variable.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The reconstructed sequence <cite>x_hat</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.VAE.encoder">
-<span class="sig-name descname"><span class="pre">encoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.VAE.encoder" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">encoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#coal.main.VAE.encoder" title="Permalink to this definition"></a></dt>
+<dd><p>The encoder network that processes the input sequence and returns latent variable <cite>z</cite>, <cite>mu</cite>, and <cite>logvar</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input sequence.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the latent variable <cite>z</cite>, the mean <cite>mu</cite>, and log variance <cite>logvar</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[torch.Tensor, torch.Tensor, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.VAE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.VAE.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#coal.main.VAE.forward" title="Permalink to this definition"></a></dt>
+<dd><p>The forward pass of the VAE model. Encodes the input and decodes it back into a reconstructed sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input sequence.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The reconstructed sequence <cite>x_hat</cite>, latent variable <cite>z</cite>, mean <cite>mu</cite>, and log variance <cite>logvar</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.VAE.init_hidden">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_hidden</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.VAE.init_hidden" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">init_hidden</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#coal.main.VAE.init_hidden" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize the hidden state for the LSTM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch_size</strong> (<em>int</em>) – The size of the batch.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The initial hidden state for the LSTM.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.main.VAE.reparameterize">
-<span class="sig-name descname"><span class="pre">reparameterize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.VAE.reparameterize" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">reparameterize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#coal.main.VAE.reparameterize" title="Permalink to this definition"></a></dt>
+<dd><p>Reparameterization trick to sample from a normal distribution N(mu, sigma^2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>torch.Tensor</em>) – The mean of the distribution.</p></li>
+<li><p><strong>logvar</strong> (<em>torch.Tensor</em>) – The log variance of the distribution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A sample from the distribution using the reparameterization trick.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="coal.main.VAE.training">
@@ -271,42 +413,234 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.main.clip_evaluate">
 <span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">clip_evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.clip_evaluate" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Evaluates the CLIP model on the validation set.</p>
+<p>The <cite>clip_evaluate</cite> function computes the average loss and accuracy of the model
+on a given validation dataset. It operates in evaluation mode (<cite>model.eval()</cite>)
+and does not update gradients during the forward pass (<cite>torch.no_grad()</cite>).</p>
+<p>The evaluation is based on contrastive loss between the image and text embeddings.
+The image and text embeddings are compared using cosine similarity, and the cross-entropy loss
+is computed based on the similarity scores between each image-text pair.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The CLIP model to evaluate, which consists of image and text encoders.</p></li>
+<li><p><strong>dataloader</strong> (<em>DataLoader</em>) – A PyTorch DataLoader object containing the validation dataset.</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em>) – The device (CPU or GPU) on which the model and data are loaded.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing the average loss and average accuracy over the entire validation set.</dt><dd><ul class="simple">
+<li><p>avg_loss (float): The average contrastive loss over all batches.</p></li>
+<li><p>avg_acc (float): The average accuracy over all batches (measured as the average similarity
+between image-text pairs).</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.main.clip_train">
 <span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">clip_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.clip_train" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Trains the CLIP model with image-text pairs, using a contrastive loss function.</p>
+<p>This function trains the CLIP model by minimizing a cross-entropy loss on the image-text similarity.
+The model learns to align image and text representations in a common embedding space, where the
+image and corresponding text are closer in this space, and non-corresponding pairs are farther apart.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The CLIP model to be trained. It should have methods <cite>encode_image</cite> and <cite>encode_text</cite>
+for encoding images and texts into embeddings, respectively.</p></li>
+<li><p><strong>dataloader</strong> (<em>DataLoader</em>) – A PyTorch DataLoader object that provides batches of image-text pairs for training.</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em>) – The device (CPU or GPU) on which to train the model.</p></li>
+<li><p><strong>num_epochs</strong> (<em>int</em>) – The number of epochs to train the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing two lists:</dt><dd><ul class="simple">
+<li><p>losses (list): A list of average losses per epoch.</p></li>
+<li><p>accuracies (list): A list of average accuracies per epoch.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The optimizer used is Adam with a learning rate of 3e-4.</p></li>
+<li><p>The learning rate is scheduled with a step size of 1000 and gamma of 0.1.</p></li>
+<li><p>The contrastive loss is computed using cross-entropy loss between image and text logits.</p></li>
+<li><dl class="simple">
+<dt>For each image-text pair, the loss is calculated as the average cross-entropy between:</dt><dd><ul>
+<li><p>image logits vs. text labels</p></li>
+<li><p>text logits vs. image labels</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.main.loss_function">
-<span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">loss_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recon_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">KLD_alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.loss_function" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">loss_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recon_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">KLD_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#coal.main.loss_function" title="Permalink to this definition"></a></dt>
+<dd><p>VAE Loss function: A combination of Reconstruction Loss and KL Divergence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>recon_x</strong> (<em>torch.Tensor</em>) – The reconstructed input from the decoder (predicted).</p></li>
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – The true input (target).</p></li>
+<li><p><strong>mu</strong> (<em>torch.Tensor</em>) – The mean of the latent variable distribution.</p></li>
+<li><p><strong>logvar</strong> (<em>torch.Tensor</em>) – The log variance of the latent variable distribution.</p></li>
+<li><p><strong>KLD_alpha</strong> (<em>float</em>) – The weight for the KL Divergence loss.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>BCE</strong> (<em>torch.Tensor</em>) – The Binary Cross-Entropy (or other reconstruction loss) term.</p></li>
+<li><p><strong>KLD_alpha</strong> (<em>float</em>) – The weight for the KL Divergence loss (for reference).</p></li>
+<li><p><strong>KLD</strong> (<em>torch.Tensor</em>) – The Kullback-Leibler Divergence loss.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.main.onehotSELFIES">
 <span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">onehotSELFIES</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selfies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.onehotSELFIES" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Converts a list of SELFIES strings into one-hot encoded representations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>selfies</strong> (<em>list</em><em> of </em><em>str</em>) – A list of SELFIES strings to be one-hot encoded.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>onehot_selfies</strong> (<em>numpy.ndarray</em>) – A 3D numpy array of one-hot encoded SELFIES strings with shape
+(data_size, dict_size, seq_len), where:
+- data_size is the number of SELFIES strings.
+- dict_size is the size of the alphabet.
+- seq_len is the maximum length of the encoded SELFIES strings.</p></li>
+<li><p><strong>idx_to_symbol</strong> (<em>dict</em>) – A dictionary mapping the index back to the symbol for each character.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.main.preprocess">
 <span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.preprocess" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Preprocesses a CSV file by cleaning up SMILES strings and saving the filtered data to an output CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – The path to the input CSV file containing the SMILES data.</p></li>
+<li><p><strong>output_file</strong> (<em>str</em>) – The path where the preprocessed CSV file will be saved.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">preprocess</span><span class="p">(</span><span class="s1">&#39;input_data.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;cleaned_data.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.main.smiles2selfies">
 <span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">smiles2selfies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.smiles2selfies" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Convert a list of SMILES strings into SELFIES strings and return the valid SELFIES along with their indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>smiles</strong> (<em>list</em><em> of </em><em>str</em>) – A list of SMILES strings.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>selfies</strong> (<em>list of str</em>) – A list of valid SELFIES strings corresponding to the input SMILES.</p></li>
+<li><p><strong>valid_indices</strong> (<em>list of int</em>) – A list of indices of the valid SMILES strings that were successfully converted to SELFIES.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.main.test">
-<span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">KLD_alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.test" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataLoader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">KLD_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#coal.main.test" title="Permalink to this definition"></a></dt>
+<dd><p>Evaluate the VAE model on the test dataset after training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The VAE model to evaluate.</p></li>
+<li><p><strong>test_loader</strong> (<em>DataLoader</em>) – The DataLoader instance that provides the test data in batches.</p></li>
+<li><p><strong>optimizer</strong> (<em>optim.Optimizer</em>) – The optimizer used for training, though not needed for testing.</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em>) – The device (CPU or GPU) on which the model and data will be placed.</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – The current epoch number. Used for logging.</p></li>
+<li><p><strong>KLD_alpha</strong> (<em>float</em>) – A scaling factor for the Kullback-Leibler Divergence (KLD) term in the loss function, which should be the same as used in training.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><p>float: The average test loss for the entire test set.</p>
+</dd>
+<dt>This function performs the evaluation (testing) loop:</dt><dd><ol class="arabic simple">
+<li><p>Sets the model to evaluation mode using <cite>model.eval()</cite>.</p></li>
+<li><p>Iterates over the batches in the test data using <cite>test_loader</cite>.</p></li>
+<li><p>For each batch, it passes the input data through the model, computes the reconstruction loss (BCE) and KL divergence (KLD).</p></li>
+<li><p>Accumulates the total loss across all batches.</p></li>
+<li><p>Computes and logs the average test loss for the entire test set.</p></li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="coal.main.train">
-<span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">KLD_alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coal.main.train" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">coal.main.</span></span><span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataLoader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">KLD_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#coal.main.train" title="Permalink to this definition"></a></dt>
+<dd><p>Train the Variational Autoencoder (VAE) model for one epoch on the given training data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The VAE model to train.</p></li>
+<li><p><strong>train_loader</strong> (<em>DataLoader</em>) – The DataLoader instance that provides the training data in batches.</p></li>
+<li><p><strong>optimizer</strong> (<em>optim.Optimizer</em>) – The optimizer used to update the model’s weights (e.g., Adam).</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em>) – The device (CPU or GPU) on which the model and data will be placed.</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – The current epoch number. Used for logging.</p></li>
+<li><p><strong>KLD_alpha</strong> (<em>float</em>) – A scaling factor for the Kullback-Leibler Divergence (KLD) term in the loss function.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><dl class="simple">
+<dt>tuple: A tuple containing:</dt><dd><ul class="simple">
+<li><p>avg_train_loss (float): The average loss for the epoch.</p></li>
+<li><p>avg_BCE (float): The average Binary Cross-Entropy (BCE) loss across the epoch.</p></li>
+<li><p>avg_KLD (float): The average Kullback-Leibler Divergence (KLD) loss across the epoch.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>This function performs the training loop for a single epoch:</dt><dd><ol class="arabic simple">
+<li><p>Zero the gradients for the optimizer.</p></li>
+<li><p>Pass data through the VAE model and calculate reconstruction loss (BCE) and KL divergence (KLD).</p></li>
+<li><p>Compute the total loss (BCE + KLD).</p></li>
+<li><p>Perform backpropagation to update the model weights.</p></li>
+<li><p>Track the total loss for logging and return average loss values after the epoch.</p></li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 
