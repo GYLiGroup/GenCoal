@@ -18,13 +18,8 @@ build:
 # Install Python dependencies for the main project
 python:
   install:
-    - requirements: requirements.txt  # 根目录下的 requirements.txt，用于安装项目依赖
-
-# Install Sphinx dependencies for documentation
-dependencies:
-  install:
     - requirements: docs/requirements.txt  # docs 目录下的 requirements.txt，用于安装 Sphinx 相关依赖
-
+    
 # Optionally build your docs in additional formats such as PDF
 # Default
 formats: []
