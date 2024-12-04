@@ -35,16 +35,25 @@ sys.path.insert(0, coal_path)
 print("Current sys.path:", sys.path)
 
 extensions = [
-    'sphinx.ext.autodoc',       # Auto-generates docs from docstrings
+    'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon',      # Supports Google/NumPy docstring styles
-    'sphinx.ext.viewcode',
-    'nbsphinx',                 # For handling Jupyter Notebook files
-    'myst_parser',              # For handling Markdown files (if needed)
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.todo',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.napoleon',
+    'nbsphinx',
+    'sphinx_gallery.load_style',
 ]
 
+# Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
-exclude_patterns = []
+
+# List of patterns, relative to source directory, that match files and
+# directories to ignore when looking for source files.
+# This pattern also affects html_static_path and html_extra_path .
+exclude_patterns = ['_build', '**.ipynb_checkpoints',   '404.rst' ]#'**.ipynb',]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
