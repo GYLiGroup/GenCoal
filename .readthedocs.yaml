@@ -9,18 +9,16 @@ version: 2
 sphinx:
    configuration: docs/source/conf.py
 
+# Add build operating system if needed
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.8"
+
+python:
+  install:
+    - requirements: requirements.txt
+
 # Optionally build your docs in additional formats such as PDF
 # Default
 formats: []
-
-# Optionally set the version of Python and requirements required to build your docs
-python:
-   version: "3.8"
-   install:
-   - requirements: docs/requirements.txt
-
-# Add build operating system if needed
-build:
-  os: ubuntu-20.04
-  tools:
-    - sphinx
