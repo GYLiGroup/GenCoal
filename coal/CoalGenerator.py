@@ -1,7 +1,6 @@
 import random
 from rdkit import Chem
-from coal import utils
-import coal.utils as ut
+from coal import utils as ut
 
 class CoalGenerator:
     def __init__(self, data):
