@@ -1573,7 +1573,35 @@ def connect_rings(molecules_tuple_list: list) -> str:
     final_connected_smiles = Chem.MolToSmiles(final_connected_mol)
     return final_connected_smiles
 
-def count_ketone_carbons(smiles_list: list) -> int:
+def count_hydroxy_oxygen(smiles_list: List[str]) -> int:
+    """
+    计算一个 SMILES 字符串列表中所有分子中的羟基氧（OH）原子的总数。
+
+    :param smiles_list: SMILES 字符串的列表
+    :return: 羟基氧（OH）原子的总数
+    """
+    total_count = 0
+    for smiles in smiles_list:
+        mol = Chem.MolFromSmiles(smiles)  # 从 SMILES 创建分子对象
+        mol_with_hs = AddHs(mol)  # 为分子添加氢原子
+
+        hydroxy_oxygen_indices = []
+        for atom in mol_with_hs.GetAtoms():
+            # 查找氧原子或硫原子
+            if atom.GetSymbol() in ['O', 'S']:
+                neighbors = atom.GetNeighbors()
+                has_hydrogen = False
+                # 检查该原子是否与氢原子相连
+                for neighbor in neighbors:
+                    if neighbor.GetSymbol() == 'H':
+                        has_hydrogen = True
+                        break
+                if has_hydrogen:
+                    hydroxy_oxygen_indices.append(atom.GetIdx())  # 记录原子索引
+        total_count += len(hydroxy_oxygen_indices)  # 累加数量
+    return total_count
+
+def count_ketone_carbons(smiles_list: List[str]) -> int:
     """
     Counts the total number of ketone carbon atoms in a list of molecules represented by SMILES strings.
 
@@ -1744,7 +1772,13 @@ def connect_rings_C4(smiles1: str) -> str:
     mol2 = Chem.MolFromSmiles(smiles2)
 
     # Identify adjacent carbon pairs in the first molecule for connection
-    index_pairs_carbons1 = _find_adjacent_pairs(carbons1, mol1)
+    index_pairs_carbons1 = []
+    for i in range(len(carbons1)):
+        atom1 = mol1.GetAtomWithIdx(carbons1[i])
+        for neighbor in atom1.GetNeighbors():
+            if neighbor.GetSymbol() == 'C' and neighbor.GetIdx() in carbons1:
+                if carbons1[i] < neighbor.GetIdx():
+                    index_pairs_carbons1.append((carbons1[i], neighbor.GetIdx()))
 
     if not index_pairs_carbons1:
         print(f"No suitable pair of carbon atoms found in the molecule: {smiles1}")
