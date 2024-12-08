@@ -96,7 +96,39 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="coal.CoalGenerator.CoalGenerator.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coal.CoalGenerator.CoalGenerator.run" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Process logic:</p>
+<blockquote>
+<div><p>Stage 1: Generate candidate SMILES (substructures)</p>
+<blockquote>
+<div><p>Generate Top N candidate molecules based on SMILES strings and calculate their target attributes</p>
+<p>Calculate the target molecule’s chemical formula and target attributes based on user-provided parameters</p>
+<p>Identify all combinations meeting the target C/N aromatic ratio (C_N_ar) and further filter those satisfying O/S ratio requirements</p>
+<p>Compute combinations with the minimum total hydrogen count to find the optimal candidate substructures</p>
+<p>Predict atom counts and generate candidate SMILES strings representing these substructures</p>
+</div></blockquote>
+<p>Stage 2: Generate aromatic nucleus SMILES</p>
+<blockquote>
+<div><p>Divide the candidate SMILES into multi-ring and single-ring groups</p>
+<p>Update SMILES components by adding functional groups like propane and connecting aromatic rings</p>
+<p>Combine SMILES components by connecting multi-ring structures and balancing carbon additions</p>
+<p>Adjust the list of SMILES components to ensure target atom counts for hydroxyl and ketone groups are satisfied</p>
+<p>Sort and process the components to create an ordered final list of SMILES strings</p>
+<p>Sequentially connect SMILES strings into a complete molecule while ensuring chemical validity</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Stage 3: Post-process and calculate coal model properties</dt><dd><p>Calculate and report the chemical formula, unsaturated carbon ratio, and elemental mass percentages of the final coal model</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl>
+<dt>Return value:</dt><dd><p>A string representation of the predicted SMILES for the coal model</p>
+<p>Prints detailed outputs including:</p>
+<p>Predicted chemical formula (e.g., C120H100O10N5S2)</p>
+<p>Unsaturated carbon ratio</p>
+<p>Predicted elemental mass percentages</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

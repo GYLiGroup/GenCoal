@@ -4,6 +4,53 @@ from coal import utils as ut
 
 class CoalGenerator:
     def __init__(self, data):
+        """
+        Parameters:
+            data (dict): A dictionary containing initialization data for the instance. The keys and their corresponding values are described below:
+            
+            type (str): Specifies the type of coal model to be processed (e.g., "anthracite", "bituminous").
+            
+            coal_smiles_list (list of str): A list of SMILES strings representing the primary coal molecules.
+            
+            extra_smiles_list (list of str): A list of additional SMILES strings used to complement the primary coal molecules.
+            
+            ele_ratio (dict): A dictionary specifying the desired elemental ratio for the target coal model. Keys represent elements (e.g., "C", "H", "O") and values represent their ratios.
+            
+            C90 (int): The number of carbon atoms in a specific reference structure (C90 molecule) used as a parameter for target property calculations.
+            
+            C180 (int): The number of carbon atoms in a specific reference structure (C180 molecule) used as a parameter for target property calculations.
+            
+            C_atom (float): The total number of moles of carbon atoms to be considered for the target molecule.
+            
+        Instance Variables:
+            type (str): Stores the type of coal model for use in subsequent processing.
+            
+            coal_smiles_list (list of str): Stores the list of SMILES strings for primary coal molecules.
+            
+            extra_smiles_list (list of str): Stores the list of additional SMILES strings for complementing the primary molecules.
+            
+            ele_ratio (dict): Stores the desired elemental ratio for use in target property calculations.
+            
+            C90 (int): Stores the number of carbon atoms in the C90 molecule.
+            
+            C180 (int): Stores the number of carbon atoms in the C180 molecule.
+            
+            C_moles (float): Stores the total number of carbon atom moles for the target molecule.
+            
+            total_smiles_list (list of str): Combines `coal_smiles_list` and `extra_smiles_list` into a single list of SMILES strings for processing.
+            
+            target_atomNum (dict): Initializes an empty dictionary to store the atom counts for the target molecule.
+            
+            carbonyl (int): Initializes to zero, representing the target carbonyl group count for the molecule.
+            
+            hydroxyl (int): Initializes to zero, representing the target hydroxyl group count for the molecule.
+            
+            predicted_atomNum (dict): Initializes an empty dictionary to store the predicted atom counts of the final candidate molecule.
+            
+            candidate_smiles_list (list of str): Initializes an empty list to store SMILES strings of candidate molecules.
+            
+            topN_smiles_list (list of str): Initializes an empty list to store the Top N candidate SMILES strings after processing.
+        """
         # Initialize instance variables including the lists of compounds and chemical properties
         self.type = data['type']
         self.coal_smiles_list = data['coal_smiles_list']
@@ -23,6 +70,49 @@ class CoalGenerator:
 
 
     def run(self):
+        """
+        Process logic:
+
+            Stage 1: Generate candidate SMILES (substructures)
+
+                Generate Top N candidate molecules based on SMILES strings and calculate their target attributes
+
+                Calculate the target molecule's chemical formula and target attributes based on user-provided parameters
+
+                Identify all combinations meeting the target C/N aromatic ratio (C_N_ar) and further filter those satisfying O/S ratio requirements
+
+                Compute combinations with the minimum total hydrogen count to find the optimal candidate substructures
+
+                Predict atom counts and generate candidate SMILES strings representing these substructures
+
+            Stage 2: Generate aromatic nucleus SMILES
+
+                Divide the candidate SMILES into multi-ring and single-ring groups
+
+                Update SMILES components by adding functional groups like propane and connecting aromatic rings
+
+                Combine SMILES components by connecting multi-ring structures and balancing carbon additions
+
+                Adjust the list of SMILES components to ensure target atom counts for hydroxyl and ketone groups are satisfied
+
+                Sort and process the components to create an ordered final list of SMILES strings
+
+                Sequentially connect SMILES strings into a complete molecule while ensuring chemical validity
+
+            Stage 3: Post-process and calculate coal model properties
+                Calculate and report the chemical formula, unsaturated carbon ratio, and elemental mass percentages of the final coal model
+
+        Return value:
+            A string representation of the predicted SMILES for the coal model
+
+            Prints detailed outputs including:
+
+            Predicted chemical formula (e.g., C120H100O10N5S2)
+
+            Unsaturated carbon ratio
+            
+            Predicted elemental mass percentages
+        """
         # Stage 1: generate candidate SMILES (Substructures)
         # Step 1: Generate Top N candidate molecules and their target attributes
         topN_smiles_list = ut.getPackage(self.total_smiles_list)

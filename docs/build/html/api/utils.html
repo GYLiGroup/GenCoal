@@ -69,6 +69,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.connect_rings_C3"><code class="docutils literal notranslate"><span class="pre">connect_rings_C3()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.connect_rings_C4"><code class="docutils literal notranslate"><span class="pre">connect_rings_C4()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.count_atoms"><code class="docutils literal notranslate"><span class="pre">count_atoms()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#coal.utils.count_hydroxy_oxygen"><code class="docutils literal notranslate"><span class="pre">count_hydroxy_oxygen()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.count_ketone_carbons"><code class="docutils literal notranslate"><span class="pre">count_ketone_carbons()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.count_property"><code class="docutils literal notranslate"><span class="pre">count_property()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coal.utils.daf2ad"><code class="docutils literal notranslate"><span class="pre">daf2ad()</span></code></a></li>
@@ -547,8 +548,22 @@ Includes ‘C’, ‘H’, ‘O’, ‘N’, and ‘S’.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="coal.utils.count_hydroxy_oxygen">
+<span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">count_hydroxy_oxygen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#coal.utils.count_hydroxy_oxygen" title="Permalink to this definition"></a></dt>
+<dd><p>计算一个 SMILES 字符串列表中所有分子中的羟基氧（OH）原子的总数。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>smiles_list</strong> – SMILES 字符串的列表</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>羟基氧（OH）原子的总数</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="coal.utils.count_ketone_carbons">
-<span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">count_ketone_carbons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#coal.utils.count_ketone_carbons" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">coal.utils.</span></span><span class="sig-name descname"><span class="pre">count_ketone_carbons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smiles_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#coal.utils.count_ketone_carbons" title="Permalink to this definition"></a></dt>
 <dd><p>Counts the total number of ketone carbon atoms in a list of molecules represented by SMILES strings.</p>
 <p>A ketone carbon atom is defined as a carbon atom that is double-bonded to an oxygen atom and is not part of an aldehyde or carboxyl group.</p>
 <p>This function iterates over the provided list of SMILES strings, converts each molecule to an RDKit molecule object,

@@ -98,14 +98,14 @@
              
   <section id="bitumite">
 <h1>bitumite<a class="headerlink" href="#bitumite" title="Permalink to this heading"></a></h1>
-<p>Bitumite - Structural Model Construction with 80-95% Carbon content <a class="reference external" href="https://colab.research.google.com/github/liuhaodong2021/GenCoal/blob/main/docs/source/examples/bitumite.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
+<p>Bitumite - Structural Model Construction with 80-95% Carbon content <a class="reference external" href="https://colab.research.google.com/github/liuhaodong9/GenCoal/blob/main/docs/source/examples/bitumite.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <section id="Install-the-package-from-pip-(skip-this-step-if-the-package-is-already-installed)">
 <h2>Install the package from pip (skip this step if the package is already installed)<a class="headerlink" href="#Install-the-package-from-pip-(skip-this-step-if-the-package-is-already-installed)" title="Permalink to this heading"></a></h2>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># ! pip install clipirmol
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ! pip install clipirmol</span>
 </pre></div>
 </div>
 </div>
@@ -116,19 +116,20 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># set coal path (optional if installed via pip)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set coal path (optional if installed via pip)</span>
 
-import sys, os
-import json
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
-project_path = os.path.abspath(os.path.join(os.getcwd(), &#39;../../..&#39;))
-print(project_path)
-sys.path.insert(0, project_path)
+<span class="n">project_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;../../..&#39;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">project_path</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">project_path</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">project_path</span><span class="p">)</span>
 
-# import python file from coal file directory
-import coal.utils as ut
-import coal.CoalGenerator as gen
-import coal.ClipIRMol as clipirmol
+<span class="c1"># import python file from coal file directory</span>
+<span class="kn">import</span> <span class="nn">coal.utils</span> <span class="k">as</span> <span class="nn">ut</span>
+<span class="kn">import</span> <span class="nn">coal.CoalGenerator</span> <span class="k">as</span> <span class="nn">gen</span>
+<span class="kn">import</span> <span class="nn">coal.ClipIRMol</span> <span class="k">as</span> <span class="nn">clipirmol</span>
 <br/></pre></div>
 </div>
 </div>
@@ -147,15 +148,15 @@ import coal.ClipIRMol as clipirmol
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>C_ad = 76.12  # 碳
-N_ad = 0.83   # 氮
-H_ad = 4.94  # 氢
-S_ad = 0.19  # 硫
-M = 0.79   # 水分
-A = 12.22   # 灰分
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">C_ad</span> <span class="o">=</span> <span class="mf">76.12</span>  <span class="c1"># 碳</span>
+<span class="n">N_ad</span> <span class="o">=</span> <span class="mf">0.83</span>   <span class="c1"># 氮</span>
+<span class="n">H_ad</span> <span class="o">=</span> <span class="mf">4.94</span>  <span class="c1"># 氢</span>
+<span class="n">S_ad</span> <span class="o">=</span> <span class="mf">0.19</span>  <span class="c1"># 硫</span>
+<span class="n">M</span> <span class="o">=</span> <span class="mf">0.79</span>   <span class="c1"># 水分</span>
+<span class="n">A</span> <span class="o">=</span> <span class="mf">12.22</span>   <span class="c1"># 灰分</span>
 
-C_daf, N_daf, H_daf, S_daf, O_daf = ut.ad2daf(C_ad, N_ad, H_ad, S_ad, M, A)
-print(f&quot;C_daf, N_daf, H_daf, S_daf, O_daf = {C_daf, N_daf, H_daf, S_daf, O_daf}&quot;)
+<span class="n">C_daf</span><span class="p">,</span> <span class="n">N_daf</span><span class="p">,</span> <span class="n">H_daf</span><span class="p">,</span> <span class="n">S_daf</span><span class="p">,</span> <span class="n">O_daf</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">ad2daf</span><span class="p">(</span><span class="n">C_ad</span><span class="p">,</span> <span class="n">N_ad</span><span class="p">,</span> <span class="n">H_ad</span><span class="p">,</span> <span class="n">S_ad</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;C_daf, N_daf, H_daf, S_daf, O_daf = </span><span class="si">{</span><span class="n">C_daf</span><span class="p">,</span><span class="w"> </span><span class="n">N_daf</span><span class="p">,</span><span class="w"> </span><span class="n">H_daf</span><span class="p">,</span><span class="w"> </span><span class="n">S_daf</span><span class="p">,</span><span class="w"> </span><span class="n">O_daf</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -175,22 +176,22 @@ C_daf, N_daf, H_daf, S_daf, O_daf = (87.50431084032648, 0.9541326589263134, 5.67
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># daf       C       H       N       S       O
-# 主2        89.76   4.74    1.45    1.78    2.27
-# 主3        88.51   5.03    1.54    1.09    3.83
-# 肥2        88.48   5.20    1.57    0.45    4.30
-# 肥3        87.22   5.03    1.51    2.08    4.16
-# 瘦2        90.34   4.45    1.55    1.00    2.66
-# 瘦4        91.59   4.41    1.62    0.43    1.95
-# FS
-ele_ratio = {
-        &quot;C&quot;: C_daf,
-        &quot;H&quot;: H_daf,
-        &quot;N&quot;: N_daf,
-        &quot;S&quot;: S_daf,
-        &quot;O&quot;: O_daf
-    }
-print(ele_ratio)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># daf       C       H       N       S       O</span>
+<span class="c1"># 主2        89.76   4.74    1.45    1.78    2.27</span>
+<span class="c1"># 主3        88.51   5.03    1.54    1.09    3.83</span>
+<span class="c1"># 肥2        88.48   5.20    1.57    0.45    4.30</span>
+<span class="c1"># 肥3        87.22   5.03    1.51    2.08    4.16</span>
+<span class="c1"># 瘦2        90.34   4.45    1.55    1.00    2.66</span>
+<span class="c1"># 瘦4        91.59   4.41    1.62    0.43    1.95</span>
+<span class="c1"># FS</span>
+<span class="n">ele_ratio</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="n">C_daf</span><span class="p">,</span>
+        <span class="s2">&quot;H&quot;</span><span class="p">:</span> <span class="n">H_daf</span><span class="p">,</span>
+        <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="n">N_daf</span><span class="p">,</span>
+        <span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="n">S_daf</span><span class="p">,</span>
+        <span class="s2">&quot;O&quot;</span><span class="p">:</span> <span class="n">O_daf</span>
+    <span class="p">}</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ele_ratio</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -206,7 +207,7 @@ print(ele_ratio)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
 </div>
@@ -214,7 +215,7 @@ print(ele_ratio)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
 </div>
@@ -225,10 +226,9 @@ print(ele_ratio)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>print(os.getcwd())
-NMR_file_path = &quot;bitumite/FB-NMR.csv&quot;
-C90, C180 = ut.calculate_C90_C180(NMR_file_path)
-print(&quot;ppm&gt;90 =&quot;, C90, &quot;,ppm&gt;180 =&quot;, C180)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">NMR_file_path</span> <span class="o">=</span> <span class="s2">&quot;bitumite/FB-NMR.csv&quot;</span>
+<span class="n">C90</span><span class="p">,</span> <span class="n">C180</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">calculate_C90_C180</span><span class="p">(</span><span class="n">NMR_file_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ppm&gt;90 =&quot;</span><span class="p">,</span> <span class="n">C90</span><span class="p">,</span> <span class="s2">&quot;,ppm&gt;180 =&quot;</span><span class="p">,</span> <span class="n">C180</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -236,15 +236,7 @@ print(&quot;ppm&gt;90 =&quot;, C90, &quot;,ppm&gt;180 =&quot;, C180)
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<div class="highlight"><pre>
-/home/liuhaodong/CoalModel/docs/source/examples
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/examples_bitumite_12_1.png" src="../_images/examples_bitumite_12_1.png" />
+<img alt="../_images/examples_bitumite_12_0.png" src="../_images/examples_bitumite_12_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -262,17 +254,17 @@ ppm&gt;90 = 0.666 ,ppm&gt;180 = 0.028
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># 输入红外文件
-IR_file_path = &#39;bitumite/FB-FTIR.CSV&#39;
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 输入红外文件</span>
+<span class="n">IR_file_path</span> <span class="o">=</span> <span class="s1">&#39;bitumite/FB-FTIR.CSV&#39;</span>
 
 
 
-# 获取分子数据
-retrieved_molecules = clipirmol.retrieve_small_molecules(IR_file_path)
+<span class="c1"># 获取分子数据</span>
+<span class="n">retrieved_molecules</span> <span class="o">=</span> <span class="n">clipirmol</span><span class="o">.</span><span class="n">retrieve_small_molecules</span><span class="p">(</span><span class="n">IR_file_path</span><span class="p">)</span>
 
-# 打印红外光谱检索出来的小分子
-# smiles_and_scores = clipirmol.convert_data_to_smiles_scores(retrieved_molecules)
-# clipirmol.display_molecules(smiles_and_scores)
+<span class="c1"># 打印红外光谱检索出来的小分子</span>
+<span class="c1"># smiles_and_scores = clipirmol.convert_data_to_smiles_scores(retrieved_molecules)</span>
+<span class="c1"># clipirmol.display_molecules(smiles_and_scores)</span>
 </pre></div>
 </div>
 </div>
@@ -280,30 +272,30 @@ retrieved_molecules = clipirmol.retrieve_small_molecules(IR_file_path)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># 从retrieved_molecules获取SMILES字符串
-selected_smiles = [mol[&#39;smiles&#39;] for mol in retrieved_molecules]
-extended_smiles_list = []
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 从retrieved_molecules获取SMILES字符串</span>
+<span class="n">selected_smiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">mol</span><span class="p">[</span><span class="s1">&#39;smiles&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">mol</span> <span class="ow">in</span> <span class="n">retrieved_molecules</span><span class="p">]</span>
+<span class="n">extended_smiles_list</span> <span class="o">=</span> <span class="p">[]</span>
 
-# 使用connect_rings_C4函数扩展这些SMILES字符串
-for smiles in selected_smiles:
-    extended_smiles = clipirmol.connect_rings_C4(smiles)
-    extended_smiles = clipirmol.connect_rings_C4(extended_smiles)  # 再次扩展
-    extended_smiles_list.append(extended_smiles)
+<span class="c1"># 使用connect_rings_C4函数扩展这些SMILES字符串</span>
+<span class="k">for</span> <span class="n">smiles</span> <span class="ow">in</span> <span class="n">selected_smiles</span><span class="p">:</span>
+    <span class="n">extended_smiles</span> <span class="o">=</span> <span class="n">clipirmol</span><span class="o">.</span><span class="n">connect_rings_C4</span><span class="p">(</span><span class="n">smiles</span><span class="p">)</span>
+    <span class="n">extended_smiles</span> <span class="o">=</span> <span class="n">clipirmol</span><span class="o">.</span><span class="n">connect_rings_C4</span><span class="p">(</span><span class="n">extended_smiles</span><span class="p">)</span>  <span class="c1"># 再次扩展</span>
+    <span class="n">extended_smiles_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extended_smiles</span><span class="p">)</span>
 
-# 更新updated_predicted_smiles_and_scores
-updated_predicted_smiles_and_scores = [[(mol[&#39;smiles&#39;], mol[&#39;score&#39;]) for mol in retrieved_molecules]]
-for i, (smiles, score) in enumerate(updated_predicted_smiles_and_scores[0]):
-    extended_smiles = extended_smiles_list[i]
-    updated_predicted_smiles_and_scores[0][i] = (extended_smiles, score)
+<span class="c1"># 更新updated_predicted_smiles_and_scores</span>
+<span class="n">updated_predicted_smiles_and_scores</span> <span class="o">=</span> <span class="p">[[(</span><span class="n">mol</span><span class="p">[</span><span class="s1">&#39;smiles&#39;</span><span class="p">],</span> <span class="n">mol</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">mol</span> <span class="ow">in</span> <span class="n">retrieved_molecules</span><span class="p">]]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">smiles</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">updated_predicted_smiles_and_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="n">extended_smiles</span> <span class="o">=</span> <span class="n">extended_smiles_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">updated_predicted_smiles_and_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">extended_smiles</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
 
-# clipirmol.display_molecules(updated_predicted_smiles_and_scores[0])
+<span class="c1"># clipirmol.display_molecules(updated_predicted_smiles_and_scores[0])</span>
 
-# 过滤SMILES
-new_smiles_and_scores = clipirmol.filter_smiles_and_scores(updated_predicted_smiles_and_scores)
-new_smiles_and_scores = [new_smiles_and_scores]
+<span class="c1"># 过滤SMILES</span>
+<span class="n">new_smiles_and_scores</span> <span class="o">=</span> <span class="n">clipirmol</span><span class="o">.</span><span class="n">filter_smiles_and_scores</span><span class="p">(</span><span class="n">updated_predicted_smiles_and_scores</span><span class="p">)</span>
+<span class="n">new_smiles_and_scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_smiles_and_scores</span><span class="p">]</span>
 
-# 显示过滤后的图像
-clipirmol.display_molecules(new_smiles_and_scores[0])
+<span class="c1"># 显示过滤后的图像</span>
+<span class="n">clipirmol</span><span class="o">.</span><span class="n">display_molecules</span><span class="p">(</span><span class="n">new_smiles_and_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -321,16 +313,16 @@ clipirmol.display_molecules(new_smiles_and_scores[0])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>coal_smiles_list = [i[0] for i in new_smiles_and_scores[0]]
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">coal_smiles_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">new_smiles_and_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 
-# 指定 JSON 文件名
-filename = &#39;bitumite.json&#39;
+<span class="c1"># 指定 JSON 文件名</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;bitumite.json&#39;</span>
 
-# 读取现有的 JSON 数据
-with open(filename, &#39;r&#39;) as file:
-    data = json.load(file)
+<span class="c1"># 读取现有的 JSON 数据</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 
-data[&quot;C_atom&quot;] = 847
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;C_atom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">847</span>
 </pre></div>
 </div>
 </div>
@@ -341,9 +333,9 @@ data[&quot;C_atom&quot;] = 847
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>carbonyl, hydroxyl = ut.recommended_carbonyl_hydroxyl(data[&quot;C_atom&quot;], ele_ratio)
-print(f&quot;The number of O in carbonyl and hydroxyl should be {carbonyl} and {hydroxyl}&quot;)
-carbonyl, hydroxyl = 5, 0
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">carbonyl</span><span class="p">,</span> <span class="n">hydroxyl</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">recommended_carbonyl_hydroxyl</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;C_atom&quot;</span><span class="p">],</span> <span class="n">ele_ratio</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The number of O in carbonyl and hydroxyl should be </span><span class="si">{</span><span class="n">carbonyl</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">hydroxyl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">carbonyl</span><span class="p">,</span> <span class="n">hydroxyl</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span>
 </pre></div>
 </div>
 </div>
@@ -362,12 +354,12 @@ The number of O in carbonyl and hydroxyl should be 7 and 15
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># 更新 coal_smiles_list 的值
-data[&#39;coal_smiles_list&#39;] = coal_smiles_list
-data[&#39;ele_ratio&#39;] = ele_ratio
-data[&#39;C90&#39;] = C90
-data[&#39;C180&#39;] = C180
-data[&#39;type&#39;] = &quot;bitumite&quot;
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 更新 coal_smiles_list 的值</span>
+<span class="n">data</span><span class="p">[</span><span class="s1">&#39;coal_smiles_list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coal_smiles_list</span>
+<span class="n">data</span><span class="p">[</span><span class="s1">&#39;ele_ratio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ele_ratio</span>
+<span class="n">data</span><span class="p">[</span><span class="s1">&#39;C90&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">C90</span>
+<span class="n">data</span><span class="p">[</span><span class="s1">&#39;C180&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">C180</span>
+<span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;bitumite&quot;</span>
 <br/><br/></pre></div>
 </div>
 </div>
@@ -375,11 +367,11 @@ data[&#39;type&#39;] = &quot;bitumite&quot;
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span># 将更新后的数据写回 JSON 文件
-with open(filename, &#39;w&#39;) as file:
-    json.dump(data, file, indent=4)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 将更新后的数据写回 JSON 文件</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 
-print(&quot;Update input information successfully!&quot;)
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Update input information successfully!&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -395,11 +387,11 @@ Update input information successfully!
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>## 读文件
-data = ut.read_json(&#39;bitumite.json&#39;)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## 读文件</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="s1">&#39;bitumite.json&#39;</span><span class="p">)</span>
 
-generator = gen.CoalGenerator(data)
-current_smiles_list = generator.run()
+<span class="n">generator</span> <span class="o">=</span> <span class="n">gen</span><span class="o">.</span><span class="n">CoalGenerator</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">current_smiles_list</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -425,114 +417,724 @@ Evaluating combination 2/628
 Evaluating combination 3/628
 Evaluating combination 4/628
 Evaluating combination 5/628
+Evaluating combination 6/628
+Evaluating combination 7/628
+Evaluating combination 8/628
+Evaluating combination 9/628
+Evaluating combination 10/628
+Evaluating combination 11/628
+Evaluating combination 12/628
+Evaluating combination 13/628
+Evaluating combination 14/628
+Evaluating combination 15/628
+Evaluating combination 16/628
+Evaluating combination 17/628
+Evaluating combination 18/628
+Evaluating combination 19/628
+Evaluating combination 20/628
+Evaluating combination 21/628
+Evaluating combination 22/628
+Evaluating combination 23/628
+Evaluating combination 24/628
+Evaluating combination 25/628
+Evaluating combination 26/628
+Evaluating combination 27/628
+Evaluating combination 28/628
+Evaluating combination 29/628
+Evaluating combination 30/628
+Evaluating combination 31/628
+Evaluating combination 32/628
+Evaluating combination 33/628
+Evaluating combination 34/628
+Evaluating combination 35/628
+Evaluating combination 36/628
+Evaluating combination 37/628
+Evaluating combination 38/628
+Evaluating combination 39/628
+Evaluating combination 40/628
+Evaluating combination 41/628
+Evaluating combination 42/628
+Evaluating combination 43/628
+Evaluating combination 44/628
+Evaluating combination 45/628
+Evaluating combination 46/628
+Evaluating combination 47/628
+Evaluating combination 48/628
+Evaluating combination 49/628
+Evaluating combination 50/628
+Evaluating combination 51/628
+Evaluating combination 52/628
+Evaluating combination 53/628
+Evaluating combination 54/628
+Evaluating combination 55/628
+Evaluating combination 56/628
+Evaluating combination 57/628
+Evaluating combination 58/628
+Evaluating combination 59/628
+Evaluating combination 60/628
+Evaluating combination 61/628
+Evaluating combination 62/628
+Evaluating combination 63/628
+Evaluating combination 64/628
+Evaluating combination 65/628
+Evaluating combination 66/628
+Evaluating combination 67/628
+Evaluating combination 68/628
+Evaluating combination 69/628
+Evaluating combination 70/628
+Evaluating combination 71/628
+Evaluating combination 72/628
+Evaluating combination 73/628
+Evaluating combination 74/628
+Evaluating combination 75/628
+Evaluating combination 76/628
+Evaluating combination 77/628
+Evaluating combination 78/628
+Evaluating combination 79/628
+Evaluating combination 80/628
+Evaluating combination 81/628
+Evaluating combination 82/628
+Evaluating combination 83/628
+Evaluating combination 84/628
+Evaluating combination 85/628
+Evaluating combination 86/628
+Evaluating combination 87/628
+Evaluating combination 88/628
+Evaluating combination 89/628
+Evaluating combination 90/628
+Evaluating combination 91/628
+Evaluating combination 92/628
+Evaluating combination 93/628
+Evaluating combination 94/628
+Evaluating combination 95/628
+Evaluating combination 96/628
+Evaluating combination 97/628
+Evaluating combination 98/628
+Evaluating combination 99/628
+Evaluating combination 100/628
+Evaluating combination 101/628
+Evaluating combination 102/628
+Evaluating combination 103/628
+Evaluating combination 104/628
+Evaluating combination 105/628
+Evaluating combination 106/628
+Evaluating combination 107/628
+Evaluating combination 108/628
+Evaluating combination 109/628
+Evaluating combination 110/628
+Evaluating combination 111/628
+Evaluating combination 112/628
+Evaluating combination 113/628
+Evaluating combination 114/628
+Evaluating combination 115/628
+Evaluating combination 116/628
+Evaluating combination 117/628
+Evaluating combination 118/628
+Evaluating combination 119/628
+Evaluating combination 120/628
+Evaluating combination 121/628
+Evaluating combination 122/628
+Evaluating combination 123/628
+Evaluating combination 124/628
+Evaluating combination 125/628
+Evaluating combination 126/628
+Evaluating combination 127/628
+Evaluating combination 128/628
+Evaluating combination 129/628
+Evaluating combination 130/628
+Evaluating combination 131/628
+Evaluating combination 132/628
+Evaluating combination 133/628
+Evaluating combination 134/628
+Evaluating combination 135/628
+Evaluating combination 136/628
+Evaluating combination 137/628
+Evaluating combination 138/628
+Evaluating combination 139/628
+Evaluating combination 140/628
+Evaluating combination 141/628
+Evaluating combination 142/628
+Evaluating combination 143/628
+Evaluating combination 144/628
+Evaluating combination 145/628
+Evaluating combination 146/628
+Evaluating combination 147/628
+Evaluating combination 148/628
+Evaluating combination 149/628
+Evaluating combination 150/628
+Evaluating combination 151/628
+Evaluating combination 152/628
+Evaluating combination 153/628
+Evaluating combination 154/628
+Evaluating combination 155/628
+Evaluating combination 156/628
+Evaluating combination 157/628
+Evaluating combination 158/628
+Evaluating combination 159/628
+Evaluating combination 160/628
+Evaluating combination 161/628
+Evaluating combination 162/628
+Evaluating combination 163/628
+Evaluating combination 164/628
+Evaluating combination 165/628
+Evaluating combination 166/628
+Evaluating combination 167/628
+Evaluating combination 168/628
+Evaluating combination 169/628
+Evaluating combination 170/628
+Evaluating combination 171/628
+Evaluating combination 172/628
+Evaluating combination 173/628
+Evaluating combination 174/628
+Evaluating combination 175/628
+Evaluating combination 176/628
+Evaluating combination 177/628
+Evaluating combination 178/628
+Evaluating combination 179/628
+Evaluating combination 180/628
+Evaluating combination 181/628
+Evaluating combination 182/628
+Evaluating combination 183/628
+Evaluating combination 184/628
+Evaluating combination 185/628
+Evaluating combination 186/628
+Evaluating combination 187/628
+Evaluating combination 188/628
+Evaluating combination 189/628
+Evaluating combination 190/628
+Evaluating combination 191/628
+Evaluating combination 192/628
+Evaluating combination 193/628
+Evaluating combination 194/628
+Evaluating combination 195/628
+Evaluating combination 196/628
+Evaluating combination 197/628
+Evaluating combination 198/628
+Evaluating combination 199/628
+Evaluating combination 200/628
+Evaluating combination 201/628
+Evaluating combination 202/628
+Evaluating combination 203/628
+Evaluating combination 204/628
+Evaluating combination 205/628
+Evaluating combination 206/628
+Evaluating combination 207/628
+Evaluating combination 208/628
+Evaluating combination 209/628
+Evaluating combination 210/628
+Evaluating combination 211/628
+Evaluating combination 212/628
+Evaluating combination 213/628
+Evaluating combination 214/628
+Evaluating combination 215/628
+Evaluating combination 216/628
+Evaluating combination 217/628
+Evaluating combination 218/628
+Evaluating combination 219/628
+Evaluating combination 220/628
+Evaluating combination 221/628
+Evaluating combination 222/628
+Evaluating combination 223/628
+Evaluating combination 224/628
+Evaluating combination 225/628
+Evaluating combination 226/628
+Evaluating combination 227/628
+Evaluating combination 228/628
+Evaluating combination 229/628
+Evaluating combination 230/628
+Evaluating combination 231/628
+Evaluating combination 232/628
+Evaluating combination 233/628
+Evaluating combination 234/628
+Evaluating combination 235/628
+Evaluating combination 236/628
+Evaluating combination 237/628
+Evaluating combination 238/628
+Evaluating combination 239/628
+Evaluating combination 240/628
+Evaluating combination 241/628
+Evaluating combination 242/628
+Evaluating combination 243/628
+Evaluating combination 244/628
+Evaluating combination 245/628
+Evaluating combination 246/628
+Evaluating combination 247/628
+Evaluating combination 248/628
+Evaluating combination 249/628
+Evaluating combination 250/628
+Evaluating combination 251/628
+Evaluating combination 252/628
+Evaluating combination 253/628
+Evaluating combination 254/628
+Evaluating combination 255/628
+Evaluating combination 256/628
+Evaluating combination 257/628
+Evaluating combination 258/628
+Evaluating combination 259/628
+Evaluating combination 260/628
+Evaluating combination 261/628
+Evaluating combination 262/628
+Evaluating combination 263/628
+Evaluating combination 264/628
+Evaluating combination 265/628
+Evaluating combination 266/628
+Evaluating combination 267/628
+Evaluating combination 268/628
+Evaluating combination 269/628
+Evaluating combination 270/628
+Evaluating combination 271/628
+Evaluating combination 272/628
+Evaluating combination 273/628
+Evaluating combination 274/628
+Evaluating combination 275/628
+Evaluating combination 276/628
+Evaluating combination 277/628
+Evaluating combination 278/628
+Evaluating combination 279/628
+Evaluating combination 280/628
+Evaluating combination 281/628
+Evaluating combination 282/628
+Evaluating combination 283/628
+Evaluating combination 284/628
+Evaluating combination 285/628
+Evaluating combination 286/628
+Evaluating combination 287/628
+Evaluating combination 288/628
+Evaluating combination 289/628
+Evaluating combination 290/628
+Evaluating combination 291/628
+Evaluating combination 292/628
+Evaluating combination 293/628
+Evaluating combination 294/628
+Evaluating combination 295/628
+Evaluating combination 296/628
+Evaluating combination 297/628
+Evaluating combination 298/628
+Evaluating combination 299/628
+Evaluating combination 300/628
+Evaluating combination 301/628
+Evaluating combination 302/628
+Evaluating combination 303/628
+Evaluating combination 304/628
+Evaluating combination 305/628
+Evaluating combination 306/628
+Evaluating combination 307/628
+Evaluating combination 308/628
+Evaluating combination 309/628
+Evaluating combination 310/628
+Evaluating combination 311/628
+Evaluating combination 312/628
+Evaluating combination 313/628
+Evaluating combination 314/628
+Evaluating combination 315/628
+Evaluating combination 316/628
+Evaluating combination 317/628
+Evaluating combination 318/628
+Evaluating combination 319/628
+Evaluating combination 320/628
+Evaluating combination 321/628
+Evaluating combination 322/628
+Evaluating combination 323/628
+Evaluating combination 324/628
+Evaluating combination 325/628
+Evaluating combination 326/628
+Evaluating combination 327/628
+Evaluating combination 328/628
+Evaluating combination 329/628
+Evaluating combination 330/628
+Evaluating combination 331/628
+Evaluating combination 332/628
+Evaluating combination 333/628
+Evaluating combination 334/628
+Evaluating combination 335/628
+Evaluating combination 336/628
+Evaluating combination 337/628
+Evaluating combination 338/628
+Evaluating combination 339/628
+Evaluating combination 340/628
+Evaluating combination 341/628
+Evaluating combination 342/628
+Evaluating combination 343/628
+Evaluating combination 344/628
+Evaluating combination 345/628
+Evaluating combination 346/628
+Evaluating combination 347/628
+Evaluating combination 348/628
+Evaluating combination 349/628
+Evaluating combination 350/628
+Evaluating combination 351/628
+Evaluating combination 352/628
+Evaluating combination 353/628
+Evaluating combination 354/628
+Evaluating combination 355/628
+Evaluating combination 356/628
+Evaluating combination 357/628
+Evaluating combination 358/628
+Evaluating combination 359/628
+Evaluating combination 360/628
+Evaluating combination 361/628
+Evaluating combination 362/628
+Evaluating combination 363/628
+Evaluating combination 364/628
+Evaluating combination 365/628
+Evaluating combination 366/628
+Evaluating combination 367/628
+Evaluating combination 368/628
+Evaluating combination 369/628
+Evaluating combination 370/628
+Evaluating combination 371/628
+Evaluating combination 372/628
+Evaluating combination 373/628
+Evaluating combination 374/628
+Evaluating combination 375/628
+Evaluating combination 376/628
+Evaluating combination 377/628
+Evaluating combination 378/628
+Evaluating combination 379/628
+Evaluating combination 380/628
+Evaluating combination 381/628
+Evaluating combination 382/628
+Evaluating combination 383/628
+Evaluating combination 384/628
+Evaluating combination 385/628
+Evaluating combination 386/628
+Evaluating combination 387/628
+Evaluating combination 388/628
+Evaluating combination 389/628
+Evaluating combination 390/628
+Evaluating combination 391/628
+Evaluating combination 392/628
+Evaluating combination 393/628
+Evaluating combination 394/628
+Evaluating combination 395/628
+Evaluating combination 396/628
+Evaluating combination 397/628
+Evaluating combination 398/628
+Evaluating combination 399/628
+Evaluating combination 400/628
+Evaluating combination 401/628
+Evaluating combination 402/628
+Evaluating combination 403/628
+Evaluating combination 404/628
+Evaluating combination 405/628
+Evaluating combination 406/628
+Evaluating combination 407/628
+Evaluating combination 408/628
+Evaluating combination 409/628
+Evaluating combination 410/628
+Evaluating combination 411/628
+Evaluating combination 412/628
+Evaluating combination 413/628
+Evaluating combination 414/628
+Evaluating combination 415/628
+Evaluating combination 416/628
+Evaluating combination 417/628
+Evaluating combination 418/628
+Evaluating combination 419/628
+Evaluating combination 420/628
+Evaluating combination 421/628
+Evaluating combination 422/628
+Evaluating combination 423/628
+Evaluating combination 424/628
+Evaluating combination 425/628
+Evaluating combination 426/628
+Evaluating combination 427/628
+Evaluating combination 428/628
+Evaluating combination 429/628
+Evaluating combination 430/628
+Evaluating combination 431/628
+Evaluating combination 432/628
+Evaluating combination 433/628
+Evaluating combination 434/628
+Evaluating combination 435/628
+Evaluating combination 436/628
+Evaluating combination 437/628
+Evaluating combination 438/628
+Evaluating combination 439/628
+Evaluating combination 440/628
+Evaluating combination 441/628
+Evaluating combination 442/628
+Evaluating combination 443/628
+Evaluating combination 444/628
+Evaluating combination 445/628
+Evaluating combination 446/628
+Evaluating combination 447/628
+Evaluating combination 448/628
+Evaluating combination 449/628
+Evaluating combination 450/628
+Evaluating combination 451/628
+Evaluating combination 452/628
+Evaluating combination 453/628
+Evaluating combination 454/628
+Evaluating combination 455/628
+Evaluating combination 456/628
+Evaluating combination 457/628
+Evaluating combination 458/628
+Evaluating combination 459/628
+Evaluating combination 460/628
+Evaluating combination 461/628
+Evaluating combination 462/628
+Evaluating combination 463/628
+Evaluating combination 464/628
+Evaluating combination 465/628
+Evaluating combination 466/628
+Evaluating combination 467/628
+Evaluating combination 468/628
+Evaluating combination 469/628
+Evaluating combination 470/628
+Evaluating combination 471/628
+Evaluating combination 472/628
+Evaluating combination 473/628
+Evaluating combination 474/628
+Evaluating combination 475/628
+Evaluating combination 476/628
+Evaluating combination 477/628
+Evaluating combination 478/628
+Evaluating combination 479/628
+Evaluating combination 480/628
+Evaluating combination 481/628
+Evaluating combination 482/628
+Evaluating combination 483/628
+Evaluating combination 484/628
+Evaluating combination 485/628
+Evaluating combination 486/628
+Evaluating combination 487/628
+Evaluating combination 488/628
+Evaluating combination 489/628
+Evaluating combination 490/628
+Evaluating combination 491/628
+Evaluating combination 492/628
+Evaluating combination 493/628
+Evaluating combination 494/628
+Evaluating combination 495/628
+Evaluating combination 496/628
+Evaluating combination 497/628
+Evaluating combination 498/628
+Evaluating combination 499/628
+Evaluating combination 500/628
+Evaluating combination 501/628
+Evaluating combination 502/628
+Evaluating combination 503/628
+Evaluating combination 504/628
+Evaluating combination 505/628
+Evaluating combination 506/628
+Evaluating combination 507/628
+Evaluating combination 508/628
+Evaluating combination 509/628
+Evaluating combination 510/628
+Evaluating combination 511/628
+Evaluating combination 512/628
+Evaluating combination 513/628
+Evaluating combination 514/628
+Evaluating combination 515/628
+Evaluating combination 516/628
+Evaluating combination 517/628
+Evaluating combination 518/628
+Evaluating combination 519/628
+Evaluating combination 520/628
+Evaluating combination 521/628
+Evaluating combination 522/628
+Evaluating combination 523/628
+Evaluating combination 524/628
+Evaluating combination 525/628
+Evaluating combination 526/628
+Evaluating combination 527/628
+Evaluating combination 528/628
+Evaluating combination 529/628
+Evaluating combination 530/628
+Evaluating combination 531/628
+Evaluating combination 532/628
+Evaluating combination 533/628
+Evaluating combination 534/628
+Evaluating combination 535/628
+Evaluating combination 536/628
+Evaluating combination 537/628
+Evaluating combination 538/628
+Evaluating combination 539/628
+Evaluating combination 540/628
+Evaluating combination 541/628
+Evaluating combination 542/628
+Evaluating combination 543/628
+Evaluating combination 544/628
+Evaluating combination 545/628
+Evaluating combination 546/628
+Evaluating combination 547/628
+Evaluating combination 548/628
+Evaluating combination 549/628
+Evaluating combination 550/628
+Evaluating combination 551/628
+Evaluating combination 552/628
+Evaluating combination 553/628
+Evaluating combination 554/628
+Evaluating combination 555/628
+Evaluating combination 556/628
+Evaluating combination 557/628
+Evaluating combination 558/628
+Evaluating combination 559/628
+Evaluating combination 560/628
+Evaluating combination 561/628
+Evaluating combination 562/628
+Evaluating combination 563/628
+Evaluating combination 564/628
+Evaluating combination 565/628
+Evaluating combination 566/628
+Evaluating combination 567/628
+Evaluating combination 568/628
+Evaluating combination 569/628
+Evaluating combination 570/628
+Evaluating combination 571/628
+Evaluating combination 572/628
+Evaluating combination 573/628
+Evaluating combination 574/628
+Evaluating combination 575/628
+Evaluating combination 576/628
+Evaluating combination 577/628
+Evaluating combination 578/628
+Evaluating combination 579/628
+Evaluating combination 580/628
+Evaluating combination 581/628
+Evaluating combination 582/628
+Evaluating combination 583/628
+Evaluating combination 584/628
+Evaluating combination 585/628
+Evaluating combination 586/628
+Evaluating combination 587/628
+Evaluating combination 588/628
+Evaluating combination 589/628
+Evaluating combination 590/628
+Evaluating combination 591/628
+Evaluating combination 592/628
+Evaluating combination 593/628
+Evaluating combination 594/628
+Evaluating combination 595/628
+Evaluating combination 596/628
+Evaluating combination 597/628
+Evaluating combination 598/628
+Evaluating combination 599/628
+Evaluating combination 600/628
+Evaluating combination 601/628
+Evaluating combination 602/628
+Evaluating combination 603/628
+Evaluating combination 604/628
+Evaluating combination 605/628
+Evaluating combination 606/628
+Evaluating combination 607/628
+Evaluating combination 608/628
+Evaluating combination 609/628
+Evaluating combination 610/628
+Evaluating combination 611/628
+Evaluating combination 612/628
+Evaluating combination 613/628
+Evaluating combination 614/628
+Evaluating combination 615/628
+Evaluating combination 616/628
+Evaluating combination 617/628
+Evaluating combination 618/628
+Evaluating combination 619/628
+Evaluating combination 620/628
+Evaluating combination 621/628
+Evaluating combination 622/628
+Evaluating combination 623/628
+Evaluating combination 624/628
+Evaluating combination 625/628
+Evaluating combination 626/628
+Evaluating combination 627/628
+Evaluating combination 628/628
+The selection with the minimum total H is: {15: {1: 26, 2: 0}, 14: {1: 10, 0: 0, 2: 3}, 16: {0: 0}, 18: {0: 0}, 0: {0: 0}}
+After DFS get a Combination:
+Candidate molecules respresenting in SMILES: [&#39;O=Cc1ccc2ccc3ccccc3c2n1&#39;, &#39;O=Cc1cccc2c1ccc1ccccc12&#39;, &#39;O=Cc1cnc2ccc3ccccc3c2c1&#39;, &#39;O=Cc1cnc2ccc3ccccc3c2c1&#39;, &#39;O=Cc1ccc2ccc3ccccc3c2n1&#39;, &#39;O=CCCCc1ccc2cc3ccccc3cc2c1&#39;, &#39;O=Cc1ccc2ccc3ccccc3c2n1&#39;, &#39;O=Cc1ccnc2cc3ccccc3cc12&#39;, &#39;O=Cc1ccnc2cc3ccccc3cc12&#39;, &#39;O=Cc1cccc2c1ccc1ccccc12&#39;, &#39;O=Cc1ccnc2cc3ccccc3cc12&#39;, &#39;O=Cc1cnc2ccc3ccccc3c2c1&#39;, &#39;O=Cc1ccc2ccc3ccccc3c2n1&#39;, &#39;O=Cc1cnc2ccc3ccccc3c2c1&#39;, &#39;O=Cc1cccc2c1ccc1ccccc12&#39;, &#39;O=CCCc1cccc2ccc3ccccc3c12&#39;, &#39;O=CCCCc1ccc2cc3ccccc3cc2c1&#39;, &#39;O=CCCCc1ccc2cc3ccccc3cc2c1&#39;, &#39;O=CCCc1cccc2ccc3ccccc3c12&#39;, &#39;O=CCCCc1ccc2cc3ccccc3cc2c1&#39;, &#39;O=Cc1ccnc2cc3ccccc3cc12&#39;, &#39;O=CCCCc1ccc2cc3ccccc3cc2c1&#39;, &#39;O=Cc1ccnc2cc3ccccc3cc12&#39;, &#39;O=CCCc1cccc2ccc3ccccc3c12&#39;, &#39;O=Cc1ccc2ccc3ccccc3c2n1&#39;, &#39;O=Cc1cnc2ccc3ccccc3c2c1&#39;, &#39;CCOc1cc2c(ccc3ccccc32)cn1&#39;, &#39;OCCc1nc2ccccc2c2ccccc12&#39;, &#39;CCOc1ccc2ccc3ccccc3c2c1&#39;, &#39;CCOc1cc2cc3ccccc3cc2cc1C&#39;, &#39;OCc1cnc2c(ccc3ccccc32)c1&#39;, &#39;Sc1c2ccccc2cc2ccccc12&#39;, &#39;Oc1cncc2cc3ccccc3cc12&#39;, &#39;Oc1nc2ccccc2c2ccccc12&#39;, &#39;OCCc1cc2ccccc2c2ccccc12&#39;, &#39;OCc1ccc2ccc3ccccc3c2c1&#39;, &#39;OCCSc1cc2ccccc2c2ccccc12&#39;, &#39;Oc1ccc2ccc3ccccc3c2c1S&#39;, &#39;Oc1cc(S)cc2cc3ccccc3cc12&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;]
+Total atom counts: {&#39;C&#39;: 835, &#39;H&#39;: 1430, &#39;O&#39;: 38, &#39;N&#39;: 20, &#39;S&#39;: 4}
 </pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/liuhaodong/.conda/envs/clipirmol/lib/python3.8/site-packages/rdkit/Chem/Draw/IPythonConsole.py:258: UserWarning: Truncating the list of molecules to be displayed to 100. Change the maxMols value to display more.
+  warnings.warn(
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_bitumite_23_3.png" src="../_images/examples_bitumite_23_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+加丙烷前后
+[&#39;O=Cc1ccc2ccc3ccccc3c2n1&#39;, &#39;O=Cc1cccc2c1ccc1ccccc12&#39;, &#39;O=Cc1cnc2ccc3ccccc3c2c1&#39;, &#39;O=Cc1cnc2ccc3ccccc3c2c1&#39;, &#39;O=Cc1ccc2ccc3ccccc3c2n1&#39;, &#39;O=CCCCc1ccc2cc3ccccc3cc2c1&#39;, &#39;O=Cc1ccc2ccc3ccccc3c2n1&#39;, &#39;O=Cc1ccnc2cc3ccccc3cc12&#39;, &#39;O=Cc1ccnc2cc3ccccc3cc12&#39;, &#39;O=Cc1cccc2c1ccc1ccccc12&#39;, &#39;O=Cc1ccnc2cc3ccccc3cc12&#39;, &#39;O=Cc1cnc2ccc3ccccc3c2c1&#39;, &#39;O=Cc1ccc2ccc3ccccc3c2n1&#39;, &#39;O=Cc1cnc2ccc3ccccc3c2c1&#39;, &#39;O=Cc1cccc2c1ccc1ccccc12&#39;, &#39;O=CCCc1cccc2ccc3ccccc3c12&#39;, &#39;O=CCCCc1ccc2cc3ccccc3cc2c1&#39;, &#39;O=CCCCc1ccc2cc3ccccc3cc2c1&#39;, &#39;O=CCCc1cccc2ccc3ccccc3c12&#39;, &#39;O=CCCCc1ccc2cc3ccccc3cc2c1&#39;, &#39;O=Cc1ccnc2cc3ccccc3cc12&#39;, &#39;O=CCCCc1ccc2cc3ccccc3cc2c1&#39;, &#39;O=Cc1ccnc2cc3ccccc3cc12&#39;, &#39;O=CCCc1cccc2ccc3ccccc3c12&#39;, &#39;O=Cc1ccc2ccc3ccccc3c2n1&#39;, &#39;O=Cc1cnc2ccc3ccccc3c2c1&#39;, &#39;CCOc1cc2c(ccc3ccccc32)cn1&#39;, &#39;OCCc1nc2ccccc2c2ccccc12&#39;, &#39;CCOc1ccc2ccc3ccccc3c2c1&#39;, &#39;CCOc1cc2cc3ccccc3cc2cc1C&#39;, &#39;OCc1cnc2c(ccc3ccccc32)c1&#39;, &#39;Sc1c2ccccc2cc2ccccc12&#39;, &#39;Oc1cncc2cc3ccccc3cc12&#39;, &#39;Oc1nc2ccccc2c2ccccc12&#39;, &#39;OCCc1cc2ccccc2c2ccccc12&#39;, &#39;OCc1ccc2ccc3ccccc3c2c1&#39;, &#39;OCCSc1cc2ccccc2c2ccccc12&#39;, &#39;Oc1ccc2ccc3ccccc3c2c1S&#39;, &#39;Oc1cc(S)cc2cc3ccccc3cc12&#39;] [&#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;]
+[&#39;O=C1CCCc2cc3ccc4ccccc4c3nc21&#39;, &#39;O=C1CCCc2ccc3c(ccc4ccccc43)c21&#39;, &#39;O=C1CCCc2c1cnc1ccc3ccccc3c21&#39;, &#39;O=C1CCCc2nc3ccc4ccccc4c3cc21&#39;, &#39;O=C1CCCc2cc3ccc4ccccc4c3nc21&#39;, &#39;O=C1CCCC(Cc2ccc3cc4ccccc4cc3c2)C1&#39;, &#39;O=C1CCCc2cc3ccc4ccccc4c3nc21&#39;, &#39;O=C1CCCc2cnc3cc4ccccc4cc3c21&#39;, &#39;O=C1CCCc2cnc3cc4ccccc4cc3c21&#39;, &#39;O=C1CCCc2ccc3c(ccc4ccccc43)c21&#39;, &#39;O=C1CCCc2cnc3cc4ccccc4cc3c21&#39;, &#39;O=C1CCCc2c1cnc1ccc3ccccc3c21&#39;, &#39;O=C1CCCc2cc3ccc4ccccc4c3nc21&#39;, &#39;O=C1CCCc2nc3ccc4ccccc4c3cc21&#39;, &#39;O=C1CCCc2ccc3c(ccc4ccccc43)c21&#39;, &#39;O=C1CCCC(c2cccc3ccc4ccccc4c23)C1&#39;, &#39;O=C1CCCC(Cc2ccc3cc4ccccc4cc3c2)C1&#39;, &#39;O=C1CCCC(Cc2ccc3cc4ccccc4cc3c2)C1&#39;, &#39;O=C1CCCC(c2cccc3ccc4ccccc4c23)C1&#39;, &#39;O=C1CCCC(Cc2ccc3cc4ccccc4cc3c2)C1&#39;, &#39;O=C1CCCc2cnc3cc4ccccc4cc3c21&#39;, &#39;O=C1CCCC(Cc2ccc3cc4ccccc4cc3c2)C1&#39;, &#39;O=C1CCCc2cnc3cc4ccccc4cc3c21&#39;, &#39;O=C1CCCC(c2cccc3ccc4ccccc4c23)C1&#39;, &#39;O=C1CCCc2cc3ccc4ccccc4c3nc21&#39;, &#39;O=C1CCCc2nc3ccc4ccccc4c3cc21&#39;, &#39;CCOc1cc2c(ccc3ccccc32)cn1&#39;, &#39;OCCc1nc2ccccc2c2ccccc12&#39;, &#39;CCOc1ccc2ccc3ccccc3c2c1&#39;, &#39;CCOc1cc2cc3ccccc3cc2cc1C&#39;, &#39;OCc1cnc2c(ccc3ccccc32)c1&#39;, &#39;Sc1c2ccccc2cc2ccccc12&#39;, &#39;Oc1cncc2cc3ccccc3cc12&#39;, &#39;Oc1nc2ccccc2c2ccccc12&#39;, &#39;OCCc1cc2ccccc2c2ccccc12&#39;, &#39;OCc1ccc2ccc3ccccc3c2c1&#39;, &#39;OCCSc1cc2ccccc2c2ccccc12&#39;, &#39;Oc1ccc2ccc3ccccc3c2c1S&#39;, &#39;Oc1cc(S)cc2cc3ccccc3cc12&#39;] [&#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;, &#39;C&#39;]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_bitumite_23_5.png" src="../_images/examples_bitumite_23_5.png" />
+</div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
-Cell <span class="ansi-green-fg">In[12], line 5</span>
-<span class="ansi-green-intense-fg ansi-bold">      2</span> data <span style="color: rgb(98,98,98)">=</span> ut<span style="color: rgb(98,98,98)">.</span>read_json(<span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">bitumite.json</span><span style="color: rgb(175,0,0)">&#39;</span>)
-<span class="ansi-green-intense-fg ansi-bold">      4</span> generator <span style="color: rgb(98,98,98)">=</span> gen<span style="color: rgb(98,98,98)">.</span>CoalGenerator(data)
-<span class="ansi-green-fg">----&gt; 5</span> current_smiles_list <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">generator</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">run</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
-
-File <span class="ansi-green-fg">~/CoalModel/coal/CoalGenerator.py:52</span>, in <span class="ansi-cyan-fg">CoalGenerator.run</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">     48</span> <span style="color: rgb(0,135,0)">print</span>(<span style="color: rgb(175,0,0)">f</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">Evaluating combination </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>count<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span style="color: rgb(175,0,0)">/</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span><span style="color: rgb(0,135,0)">len</span>(cn_list)<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span style="color: rgb(175,0,0)">&#34;</span>)
-<span class="ansi-green-intense-fg ansi-bold">     49</span> <span style="color: rgb(95,135,135)"># 单核默认版本</span>
-<span class="ansi-green-intense-fg ansi-bold">     50</span> <span style="color: rgb(95,135,135)"># final_nested_dict_count_list = ut.backtrack_combinations(nested_dict_H, selection_dic, adjusted_target_atomNum[&#39;O_S&#39;], max_depth=50)</span>
-<span class="ansi-green-intense-fg ansi-bold">     51</span> <span style="color: rgb(95,135,135)"># 并行版本</span>
-<span class="ansi-green-fg">---&gt; 52</span> final_nested_dict_count_list <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">ut</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">parallel_backtrack_combinations</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">nested_dict_H</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">selection_dic</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">adjusted_target_atomNum</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#39;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">O_S</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#39;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">max_depth</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">50</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">n_jobs</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">40</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     55</span> all_final_selections<span style="color: rgb(98,98,98)">.</span>extend(final_nested_dict_count_list)
-<span class="ansi-green-intense-fg ansi-bold">     56</span> count <span style="color: rgb(98,98,98)">+</span><span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(98,98,98)">1</span>
-
-File <span class="ansi-green-fg">~/CoalModel/coal/utils.py:529</span>, in <span class="ansi-cyan-fg">parallel_backtrack_combinations</span><span class="ansi-blue-fg">(nested_dict_H, selection_dic, target_O_S, max_depth, n_jobs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    526</span> subtasks <span style="color: rgb(98,98,98)">=</span> generate_subtasks(nested_dict_H)
-<span class="ansi-green-intense-fg ansi-bold">    528</span> <span style="color: rgb(95,135,135)"># Parallel execution</span>
-<span class="ansi-green-fg">--&gt; 529</span> results <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">Parallel</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">n_jobs</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">n_jobs</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">(</span>
-<span class="ansi-green-intense-fg ansi-bold">    530</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">delayed</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">backtrack_for_subtask</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">H_key</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">O_S_key</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">for</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">H_key</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">O_S_key</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(175,0,255)">in</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">subtasks</span>
-<span class="ansi-green-intense-fg ansi-bold">    531</span> <span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    533</span> <span style="color: rgb(95,135,135)"># Combine results</span>
-<span class="ansi-green-intense-fg ansi-bold">    534</span> combined_solutions <span style="color: rgb(98,98,98)">=</span> []
-
-File <span class="ansi-green-fg">~/.conda/envs/clipirmol/lib/python3.8/site-packages/joblib/parallel.py:1098</span>, in <span class="ansi-cyan-fg">Parallel.__call__</span><span class="ansi-blue-fg">(self, iterable)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1095</span>     <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_iterating <span style="color: rgb(98,98,98)">=</span> <span class="ansi-bold" style="color: rgb(0,135,0)">False</span>
-<span class="ansi-green-intense-fg ansi-bold">   1097</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_backend<span style="color: rgb(98,98,98)">.</span>retrieval_context():
-<span class="ansi-green-fg">-&gt; 1098</span>     <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">retrieve</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1099</span> <span style="color: rgb(95,135,135)"># Make sure that we get a last message telling us we are done</span>
-<span class="ansi-green-intense-fg ansi-bold">   1100</span> elapsed_time <span style="color: rgb(98,98,98)">=</span> time<span style="color: rgb(98,98,98)">.</span>time() <span style="color: rgb(98,98,98)">-</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_start_time
-
-File <span class="ansi-green-fg">~/.conda/envs/clipirmol/lib/python3.8/site-packages/joblib/parallel.py:975</span>, in <span class="ansi-cyan-fg">Parallel.retrieve</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">    973</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-intense-fg ansi-bold">    974</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">getattr</span>(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_backend, <span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">supports_timeout</span><span style="color: rgb(175,0,0)">&#39;</span>, <span class="ansi-bold" style="color: rgb(0,135,0)">False</span>):
-<span class="ansi-green-fg">--&gt; 975</span>         <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_output<span style="color: rgb(98,98,98)">.</span>extend(<span class="ansi-yellow-bg">job</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">get</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">timeout</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">timeout</span><span class="ansi-yellow-bg">)</span>)
-<span class="ansi-green-intense-fg ansi-bold">    976</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
-<span class="ansi-green-intense-fg ansi-bold">    977</span>         <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_output<span style="color: rgb(98,98,98)">.</span>extend(job<span style="color: rgb(98,98,98)">.</span>get())
-
-File <span class="ansi-green-fg">~/.conda/envs/clipirmol/lib/python3.8/site-packages/joblib/_parallel_backends.py:567</span>, in <span class="ansi-cyan-fg">LokyBackend.wrap_future_result</span><span class="ansi-blue-fg">(future, timeout)</span>
-<span class="ansi-green-intense-fg ansi-bold">    564</span> <span style="color: rgb(175,0,0)">&#34;&#34;&#34;Wrapper for Future.result to implement the same behaviour as</span>
-<span class="ansi-green-intense-fg ansi-bold">    565</span> <span style="color: rgb(175,0,0)">AsyncResults.get from multiprocessing.&#34;&#34;&#34;</span>
-<span class="ansi-green-intense-fg ansi-bold">    566</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">--&gt; 567</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">future</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">result</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">timeout</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">timeout</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    568</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> CfTimeoutError <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> e:
-<span class="ansi-green-intense-fg ansi-bold">    569</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TimeoutError</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-bold" style="color: rgb(0,0,255)">e</span>
-
-File <span class="ansi-green-fg">~/.conda/envs/clipirmol/lib/python3.8/concurrent/futures/_base.py:439</span>, in <span class="ansi-cyan-fg">Future.result</span><span class="ansi-blue-fg">(self, timeout)</span>
-<span class="ansi-green-intense-fg ansi-bold">    436</span> <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_state <span style="color: rgb(98,98,98)">==</span> FINISHED:
-<span class="ansi-green-intense-fg ansi-bold">    437</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>__get_result()
-<span class="ansi-green-fg">--&gt; 439</span> <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">_condition</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">wait</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">timeout</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    441</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_state <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> [CANCELLED, CANCELLED_AND_NOTIFIED]:
-<span class="ansi-green-intense-fg ansi-bold">    442</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> CancelledError()
-
-File <span class="ansi-green-fg">~/.conda/envs/clipirmol/lib/python3.8/threading.py:302</span>, in <span class="ansi-cyan-fg">Condition.wait</span><span class="ansi-blue-fg">(self, timeout)</span>
-<span class="ansi-green-intense-fg ansi-bold">    300</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:    <span style="color: rgb(95,135,135)"># restore state no matter what (e.g., KeyboardInterrupt)</span>
-<span class="ansi-green-intense-fg ansi-bold">    301</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> timeout <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
-<span class="ansi-green-fg">--&gt; 302</span>         <span class="ansi-yellow-bg">waiter</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">acquire</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    303</span>         gotit <span style="color: rgb(98,98,98)">=</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>
-<span class="ansi-green-intense-fg ansi-bold">    304</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
-
-<span class="ansi-red-fg">KeyboardInterrupt</span>:
+Before connect: {&#39;C&#39;: 30, &#39;H&#39;: 25, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 32, &#39;H&#39;: 25, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 37, &#39;H&#39;: 31, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 39, &#39;H&#39;: 31, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 33, &#39;H&#39;: 27, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 1}, After connect: {&#39;C&#39;: 35, &#39;H&#39;: 27, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 1}
+Before connect: {&#39;C&#39;: 33, &#39;H&#39;: 27, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 35, &#39;H&#39;: 27, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 31, &#39;H&#39;: 23, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 1}, After connect: {&#39;C&#39;: 33, &#39;H&#39;: 23, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 1}
+Before connect: {&#39;C&#39;: 31, &#39;H&#39;: 24, &#39;O&#39;: 2, &#39;N&#39;: 2, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 33, &#39;H&#39;: 24, &#39;O&#39;: 2, &#39;N&#39;: 2, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 30, &#39;H&#39;: 22, &#39;O&#39;: 2, &#39;N&#39;: 2, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 32, &#39;H&#39;: 22, &#39;O&#39;: 2, &#39;N&#39;: 2, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 37, &#39;H&#39;: 31, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 39, &#39;H&#39;: 31, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 35, &#39;H&#39;: 27, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 37, &#39;H&#39;: 27, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 34, &#39;H&#39;: 29, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 36, &#39;H&#39;: 29, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 32, &#39;H&#39;: 26, &#39;O&#39;: 2, &#39;N&#39;: 2, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 34, &#39;H&#39;: 26, &#39;O&#39;: 2, &#39;N&#39;: 2, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 38, &#39;H&#39;: 32, &#39;O&#39;: 2, &#39;N&#39;: 0, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 40, &#39;H&#39;: 32, &#39;O&#39;: 2, &#39;N&#39;: 0, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 34, &#39;H&#39;: 29, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 36, &#39;H&#39;: 29, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 38, &#39;H&#39;: 33, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 40, &#39;H&#39;: 33, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 38, &#39;H&#39;: 33, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 40, &#39;H&#39;: 33, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 31, &#39;H&#39;: 23, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 1}, After connect: {&#39;C&#39;: 33, &#39;H&#39;: 23, &#39;O&#39;: 2, &#39;N&#39;: 1, &#39;S&#39;: 1}
+Before connect: {&#39;C&#39;: 31, &#39;H&#39;: 23, &#39;O&#39;: 1, &#39;N&#39;: 1, &#39;S&#39;: 1}, After connect: {&#39;C&#39;: 33, &#39;H&#39;: 23, &#39;O&#39;: 1, &#39;N&#39;: 1, &#39;S&#39;: 1}
+Before connect: {&#39;C&#39;: 42, &#39;H&#39;: 40, &#39;O&#39;: 2, &#39;N&#39;: 0, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 44, &#39;H&#39;: 40, &#39;O&#39;: 2, &#39;N&#39;: 0, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 34, &#39;H&#39;: 28, &#39;O&#39;: 2, &#39;N&#39;: 0, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 36, &#39;H&#39;: 28, &#39;O&#39;: 2, &#39;N&#39;: 0, &#39;S&#39;: 0}
+Before connect: {&#39;C&#39;: 17, &#39;H&#39;: 13, &#39;O&#39;: 1, &#39;N&#39;: 1, &#39;S&#39;: 0}, After connect: {&#39;C&#39;: 17, &#39;H&#39;: 13, &#39;O&#39;: 1, &#39;N&#39;: 1, &#39;S&#39;: 0}
+Remaining &#39;C&#39; in list2: 131
+methane_count:169
+SMILES component list: {&#39;C&#39;: 835, &#39;H&#39;: 1070, &#39;O&#39;: 38, &#39;N&#39;: 20, &#39;S&#39;: 4}
+连接前的检查 {&#39;C&#39;: 835, &#39;H&#39;: 790, &#39;O&#39;: 38, &#39;N&#39;: 20, &#39;S&#39;: 4}
+Predicted SMILES is CCOc1cc2c(cn1)c1c(c3cc4c(cc32)CCCC4)Cc2ccc3c(ccc4cc5c(nc43)C(=O)C(C3CC(C4CCc6cc7ccc8c9c(ccc8c7nc6C4=O)CCCC9)c4cc6ccc7cc8c(cc7c6nc4C3=O)Cc3c(c(OC)c(SC4c6cc7cc9ccc(CC%10C(C)C(=O)C(OCCc%11nc%12c%13c(c%14c(c%12c%12cc%15c(cc%11%12)CCCC%15)Cc%11ccc%12c(ccc%15ccc(C(OC)OCCc%16cc%17ccccc%17c%17ccc%18c(c%16%17)Cc%16c(c%17c%19c(ccc%17c%17ccccc%16%17)CC%16CCCCC%16C%19=O)C%18)cc%15%12)c%11C%14)C(Sc%11c%12cc%14c(cc%12cc%12ccc%15c(c%11%12)CCCC%15)Cc%11c(ccc%12cc%15c%16c(cnc%15cc%11%12)CCC(C)C%16=O)C%14)CCC%13)C%11CCCCC%10%11)cc9cc7cc6Cc6cc7cc9c(OC%10c%11c(cc%12ccc%13ccccc%13c%12c%11C%11C(C)C(=O)C(C%12C(=O)C(C)CCC%12Cc%12cc%13cc%14ccccc%14cc%13c%13c%12Cc%12c(CC%14C%15CCCCC%15C(C)C(=O)C%14C%14CCc%15c(cnc%16c%17c(c%18cc%19c(cc%18c%15%16)Cc%15cc%16cc%18cc(CC%20CCC(C)C(=O)C%20C%20CCC(Cc%21cc%22cc%23ccc%24c(c%23cc%22c%22c%21Cc%21ccc%23ccc%25ncc%26c(c%25c%23c%21C%22OCc%21cnc%22c(ccc%23c%25c(ccc%23%22)Cc%22c%23c(c%27c(c%22C%25)c%22c(c%25cc%28c(nc%25%27)C(=O)C(C)CC%28)CCCC%22C)C(Oc%22nc%25ccccc%25c%25c%27c(c%28c(c%22%25)CCCC%28)Cc%22c(ccc%25ccc%28cc%29c(nc%28c%22%25)C(=O)C(C)C%22CCCCC%29%22)C%27)CCC%23)c%21)CCC(C)C%26=O)CCCC%24C%21CCc%22ccc%23c(c%24c(c%25ccccc%25%23)Cc%23c(cc(C%25CC%26CCCCC%26C(=O)C%25C)c%25c%23ccc%23ccccc%23%25)C%24)c%22C%21=O)C(Sc%21cc(OC)c%22cc%23cc%24c(cc%23cc%22c%21)C(C)c%21cc%22cc%23ncc%25c(c%23cc%22cc%21C%24C)C(=O)C(C%21CCc%22nc%23c%24c(c%26ccc%27c(c%26c%23cc%22C%21=O)CCCC%27)Cc%21c(c(OCC)cc%22c%21ccc%21c%23c(ccc%21%22)CCCC%23)C%24)C%21C%25CCC%22CCCCC%22%21)C%20=O)ccc%18cc%16cc%15C%19C%15C(=O)c%16c(cnc%18cc%19c%20c(ccc%19cc%16%18)Cc%16cc%18cc%19cc(C)c(OCC)cc%19cc%18cc%16C%20)C%16CCCCC%16%15)CCCC%17C%15CCc%16ccc%17c(c%16C%15=O)c%15c(c%16ccc%18c(c%16%17)CCCC%18)Cc%16cc%17cc%18c%19c(cnc%18cc%17cc%16C%15C)CCC(C)C%19=O)C%14=O)cc%14cc%15ccccc%15cc%14c%12C%13)C%12CC%13CCCCC%13CC%12%11)Cc%11ccc%12cc%13c%14c(cnc%13cc%12c%11%10)CCC(C%10CCc%11nc%12c%13c(c%15cc%16c(cc%15c%12cc%11C%10=O)Cc%10cc%11c(ccc%12cc%15c(c(C%17CCC(OCCSc%18cc%19ccccc%19c%19ccc%20c(c%18%19)Cc%18c(c%19nc%21c(cc%19c%19ccccc%18%19)C(=O)C%18CCC%19CCCCC%19C%18C%21)C%20)C(=O)C%17C)c%12%11)CCCC%15)cc%10C%16)CCCC%13)C%14=O)cncc9cc7cc64)c4c3ccc3ccc6c(c34)CCCC6)C8)CC5)c2C1
+Predicted Chemical Fomula of final coal model is C835H714O38N20S4
+不饱和碳原子数量: 552
+Unsatutated carbon rate of final coal model is 0.6610778443113773
+Predicted elemental ratio of coal model is: {&#39;C&#39;: 85.24245225169751, &#39;H&#39;: 6.1176580190134695, &#39;O&#39;: 5.168089562992127, &#39;N&#39;: 2.3817412755763057, &#39;S&#39;: 1.0900588907205764}
 </pre></div></div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>for smiles in current_smiles_list:
-    ut.drawMolecule(smiles)
-# # 根据smiles画分子图
-# from rdkit import Chem
-# from rdkit.Chem import Draw
-# from rdkit.Chem import AllChem  # 用于添加氢原子
-# from rdkit.Chem.Draw import IPythonConsole
-
-# # 假设 current_smiles_list 已经定义并包含了SMILES字符串
-# smiles_list = current_smiles_list
-
-# for smiles in smiles_list:
-#     print(smiles)
-#     mol = Chem.MolFromSmiles(smiles, sanitize=False)  # 创建分子时不进行sanitize操作
-#
-
-#     img = Draw.MolToImage(mol, size=(600, 600))
-#     img.show()
-#     ut.calculate_unsaturated_carbon_ratio(smiles)
-<br/></pre></div>
-</div>
 </div>
 </section>
 <section id="checking-revised-molecule-model">
 <h2>checking revised molecule model<a class="headerlink" href="#checking-revised-molecule-model" title="Permalink to this heading"></a></h2>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-none notranslate"><div class="highlight"><pre><span></span>ratio = ut.calculate_unsaturated_carbon_ratio(&quot;CC1CCc(c(C1=O)cc2)c3c2c4c(Cc(cc5)c(C4)c6c5c7c(C(CC(C7=O)C8CCc(cn9)c(C8=O)c%10c9c%11c(C(c(c%12)c(C%11)cc%13c%12c%14c(CCC(C%14=O)C%15CCC(C(C%15=O)C)c(cc%16)cc%17c%16c%18c(Cc(c(C%18)c(COC%19CCc(cc%20)c(C%19=O)c%21c%20cc%22c(Cc(c(C%22)cc%23)c%24c%23cccc%24C(C%25CCC(C(C%25C%26CCc(c(C%26=O)c%27c%28Cc(c%29)c(C%27)cc%30c%29c(CC%31CCC(C(C%31C)=O)C)cc%32c%30CCCC%32)c%33c%28cccc%33)=O)OCC%34CCCCC%34c%35c(Cc(c(C%36)cc%37)c%38c%37ccc(C%39CCC(C(C%39C)=O)C)c%38)c%36ncc%35)C)c%21)n%40)c%41c%40c%42c(CCCC%42)cc%41)cc%17)cn%13)C)cc%10)C)nc6)cc3&quot;)
-print(&quot;Unsatutated carbon rate of final coal model is&quot;, ratio)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ratio</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">calculate_unsaturated_carbon_ratio</span><span class="p">(</span><span class="s2">&quot;CC1CCc(c(C1=O)cc2)c3c2c4c(Cc(cc5)c(C4)c6c5c7c(C(CC(C7=O)C8CCc(cn9)c(C8=O)c</span><span class="si">%10c</span><span class="s2">9c</span><span class="si">%11c</span><span class="s2">(C(c(c%12)c(C%11)cc</span><span class="si">%13c%12c%14c</span><span class="s2">(CCC(C%14=O)C%15CCC(C(C%15=O)C)c(cc%16)cc</span><span class="si">%17c%16c%18c</span><span class="s2">(Cc(c(C%18)c(COC%19CCc(cc%20)c(C%19=O)c</span><span class="si">%21c%20c</span><span class="s2">c</span><span class="si">%22c</span><span class="s2">(Cc(c(C%22)cc%23)c</span><span class="si">%24c%23c</span><span class="s2">ccc%24C(C%25CCC(C(C%25C%26CCc(c(C%26=O)c</span><span class="si">%27c</span><span class="s2">%28Cc(c%29)c(C%27)cc</span><span class="si">%30c%29c</span><span class="s2">(CC%31CCC(C(C%31C)=O)C)cc</span><span class="si">%32c</span><span class="s2">%30CCCC%32)c</span><span class="si">%33c%28c</span><span class="s2">ccc%33)=O)OCC%34CCCCC</span><span class="si">%34c%35c</span><span class="s2">(Cc(c(C%36)cc%37)c</span><span class="si">%38c%37c</span><span class="s2">cc(C%39CCC(C(C%39C)=O)C)c%38)c%36ncc%35)C)c%21)n%40)c</span><span class="si">%41c%40c%42c</span><span class="s2">(CCCC%42)cc%41)cc%17)cn%13)C)cc%10)C)nc6)cc3&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unsatutated carbon rate of final coal model is&quot;</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+不饱和碳原子数量: 121
+Unsatutated carbon rate of final coal model is 0.6111111111111112
+</pre></div></div>
 </div>
 </section>
 </section>
