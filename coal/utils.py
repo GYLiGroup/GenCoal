@@ -3,6 +3,7 @@ from rdkit import Chem
 from rdkit.Chem import rdchem
 from rdkit.Chem.rdchem import BondType
 from rdkit.Chem import AddHs, Draw, AllChem
+from rdkit.Chem.Draw import IPythonConsole
 from IPython.display import display
 
 from collections import defaultdict
@@ -17,6 +18,9 @@ import numpy as np
 from scipy.interpolate import interp1d
 from scipy.integrate import simps
 import matplotlib.pyplot as plt
+
+IPythonConsole.maxMols = 200  # 将最大显示分子数改为200或更大
+
 
 from joblib import Parallel, delayed
 

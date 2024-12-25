@@ -139,7 +139,7 @@ class CoalGenerator:
             # 单核默认版本
             # final_nested_dict_count_list = ut.backtrack_combinations(nested_dict_H, selection_dic, adjusted_target_atomNum['O_S'], max_depth=50)
             # 并行版本
-            final_nested_dict_count_list = ut.parallel_backtrack_combinations(nested_dict_H, selection_dic, adjusted_target_atomNum['O_S'], max_depth=50, n_jobs=40)
+            final_nested_dict_count_list = ut.parallel_backtrack_combinations(nested_dict_H, selection_dic, adjusted_target_atomNum['O_S'], max_depth=40, n_jobs=15)
 
 
             all_final_selections.extend(final_nested_dict_count_list)
